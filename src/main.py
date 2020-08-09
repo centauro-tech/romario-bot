@@ -78,7 +78,7 @@ def handler(event, context):
 				logger.info('ghrepo: {}'.format(ghrepo))
 				command = find_command(parser.text, ghrepo)
 				msg = command.execute()
-				ret = get_return(True, parser.send_message(msg))
+				ret = parser.send_message(msg)
 
 			else:
 				ret = get_return(False, 'invalid command')
