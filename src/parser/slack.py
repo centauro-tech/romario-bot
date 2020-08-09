@@ -12,7 +12,7 @@ class Slack:
 	sc = SlackClient(os.environ['sl_token'])
 
 	def __init__(self, event):
-		if 'subtype' in event['event'] and event['event']['subtype'] == 'bot_message':
+		if 'event' in event and 'subtype' in event['event'] and event['event']['subtype'] == 'bot_message':
 			return
 
 		if 'event' in event and 'text' in event['event']:
@@ -35,11 +35,11 @@ class Slack:
 
 	# Envia uma mensagem no slack como o BOT
 	def send_message(self, message):
-		self.sc.api_call(
+		ret = self.sc.api_call(
 		  "chat.postMessage",
 		  channel=self.channel,
 		  text=message,
 		  mrkdwn=True
 		)
 
-		return 'message sent in channel ' + self.channel
+		return ret
