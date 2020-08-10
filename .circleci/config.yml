@@ -58,5 +58,5 @@ jobs:
             sudo pip install --upgrade pip
             sudo pip install awscli
             cd /home/circleci/repo
-            . deploy.sh
+            . deploy.sh ${LAMBDA}
           
