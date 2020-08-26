@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import ConfigParser
+import configparser
 import sys
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 class Help:
 
@@ -12,7 +9,7 @@ class Help:
 		self.text = message
 
 	def execute(self):
-		config = ConfigParser.RawConfigParser()
+		config = configparser.RawConfigParser()
 		config.read('command.cfg')
 		ret = config.get('command-help', 'help-text')
 
