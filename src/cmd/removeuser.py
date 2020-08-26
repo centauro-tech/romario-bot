@@ -12,7 +12,7 @@ class Removeuser:
 		self.dao = dao
 		self.text = message
 		self.user = None
-		self.teams = None
+		self.team = None
 
 	def execute(self):
 		savedUser = self.dao.save_user(user=self.user, teams=self.teams)
