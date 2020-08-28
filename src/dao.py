@@ -84,7 +84,7 @@ class Dao:
 
 		return self.get_saved_user(user=user)
 
-	def list_users(self, user=None, leader=None, teams=None):
+	def list_users(self, user=None, leader=None, teams=None, team_id=None):
 
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
@@ -99,6 +99,9 @@ class Dao:
 
 		if teams is not None:
 			key = key & Attr('teams').contains(self.get_hash_value(s=teams))
+
+		if team_id is not None:
+			key = key & Attr('teams').contains(team_id)
 
 		ret = []
 

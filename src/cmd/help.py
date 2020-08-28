@@ -3,6 +3,8 @@
 import configparser
 import sys
 
+from message import Message
+
 class Help:
 
 	def __init__(self, help, message):
@@ -13,4 +15,5 @@ class Help:
 		config.read('command.cfg')
 		ret = config.get('command-help', 'help-text')
 
-		return ret
+		mObj = Message(message=ret)
+		return mObj

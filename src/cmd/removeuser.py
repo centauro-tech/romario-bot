@@ -2,6 +2,8 @@
 import configparser
 import logging
 
+from message import Message
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 

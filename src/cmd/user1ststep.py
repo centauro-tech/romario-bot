@@ -2,6 +2,8 @@
 import configparser
 import logging
 
+from message import Message
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -33,7 +35,7 @@ class User1ststep:
 									"type": "plain_text",
 									"text": t['name']
 								},
-								"value": "user_select_team_" + t['name'] + '#'
+								"value": "user_select_team_" + t['id'] + '#'
 							})
 
 		blocks = [
@@ -74,4 +76,5 @@ class User1ststep:
 			}
 		]
 
-		return blocks
+		mObj = Message(blocks=blocks)
+		return mObj

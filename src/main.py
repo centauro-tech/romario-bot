@@ -13,6 +13,7 @@ import sys
 from urllib.parse import unquote
 
 from parser.slack import Slack
+from message import Message
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -76,29 +77,21 @@ def handler(event, context):
 				ret = get_return(True, parser.validate)
 				return ret
 
-			if hasattr(parser, 'text'):
-				command = find_command(parser.text)
+			if hasattr(parser, 'event'):
+				command = find_command(parser.event)
 
 				if command is not None:
 					msg = command.execute()
 				else:
 					config = configparser.RawConfigParser()
 					config.read('command.cfg')
-					msg = config.get('default-messages', 'command-not-found')
+					msg = Message(message=config.get('default-messages', 'command-not-found'))
 
-				ret = parser.send_message(msg)
-
-			elif hasattr(parser, 'actions'):
-				command = find_command(parser.actions)
-
-				if command is not None:
-					msg = command.execute()
+				if isinstance(msg, list):
+					for message in msg:
+						ret = parser.send_message(message)
 				else:
-					config = configparser.RawConfigParser()
-					config.read('command.cfg')
-					msg = config.get('default-messages', 'command-not-found')
-
-				ret = parser.send_message(msg)
+					ret = parser.send_message(msg)
 
 			else:
 				ret = get_return(False, 'invalid command')
@@ -125,9 +118,8 @@ def find_command(message):
 
 	command = None
 	for key, value in commands:
-		#logger.info('regex: ' + key)
 		ret = re.search(r"{}".format(key), message)
-		
+
 		if (ret is not None):
 			class_ = getattr(importlib.import_module("cmd." + value), value.capitalize())
 			command = class_(dao.Dao(), message)
@@ -135,37 +127,33 @@ def find_command(message):
 
 			find_command_arguments(message, command, value)
 
-	return command
+			return command
+	return None
 
 def find_command_arguments(message, command, commandName):
-	#try:
-		#This exists to maintain the keys capitalized
-		config = configparser.ConfigParser()
-		config.optionxform = str
-		config.read('command.cfg')
-		commands = config.items('command-' + commandName)
+	config = configparser.ConfigParser()
+	config.optionxform = str
+	config.read('command.cfg')
+	commands = config.items('command-' + commandName)
 
-		arguments = None
-		for key, value in commands:
-			compiled = re.compile(r"{}".format(key), re.M|re.I)
+	arguments = None
+	for key, value in commands:
+		compiled = re.compile(r"{}".format(key), re.M|re.I)
+		ret = compiled.search(message)
+		argList = []
 
-			ret = compiled.search(message)
-			argList = []
-			
-			while (ret is not None):
-				argList.append(ret.group('value'))
-				ret = compiled.search(message, ret.span()[1])
+		while (ret is not None):
+			argList.append(ret.group('value'))
+			ret = compiled.search(message, ret.span()[1])
 
-			if len(argList) > 0:
-				if len(argList) == 1:
-					argument = argList[0]
-				if len(argList) > 1:
-					argument = argList
-		
-				setattr(command, value, argument)
-				logger.info('argument: %s, value: %s' % (value, argument))
-	#except:
-	#	logger.info('argument: Error returning arguments:')
+		if len(argList) > 0:
+			if len(argList) == 1:
+				argument = argList[0]
+			if len(argList) > 1:
+				argument = argList
+	
+			setattr(command, value, argument)
+			logger.info('argument: %s, value: %s' % (value, argument))
 
 # Format the return message
 def get_return(success, message):

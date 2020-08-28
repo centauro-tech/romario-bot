@@ -2,6 +2,8 @@
 import configparser
 import logging
 
+from message import Message
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -36,6 +38,15 @@ class Listteams:
 					"text": {
 						"type": "mrkdwn",
 						"text": "*" + team['name'] + "* :point_right: #" + channel['name']
+					},
+					"accessory": {
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": "Escalação"
+						},
+						"value": "listteammembers_" + team['id'] + "#"
 					}
 				},
 				{
@@ -53,4 +64,5 @@ class Listteams:
 			]
 		})
 
-		return blocks
+		mObj = Message(blocks=blocks)
+		return mObj

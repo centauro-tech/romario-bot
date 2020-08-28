@@ -2,6 +2,8 @@
 import configparser
 import logging
 
+from message import Message
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -12,17 +14,28 @@ class Listteammembers:
 		self.dao = dao
 		self.text = message
 		self.team = None
+		self.team_id = None
 
 	def execute(self):
-		self.team=self.team.replace('*','').replace('~','').replace('_','')
 
-		savedTeam = self.dao.get_saved_team(team_name=self.team)
+		savedTeam=None
+		savedUsers=None
+
+		print(self.team)
+		print(self.team_id)
+		
+		if  self.team is not None:
+			self.team=self.team.replace('*','').replace('~','').replace('_','')
+			savedTeam = self.dao.get_saved_team(team_name=self.team)
+			savedUsers = self.dao.list_users(teams=self.team)
+		
+		elif self.team_id is not None:
+			savedTeam = self.dao.get_saved_team(team_id=self.team_id)
+			savedUsers = self.dao.list_users(team_id=self.team_id)
+
 		if savedTeam is None:
 			return 'Não existe o time ' + self.team + '  :-('
-
 		else:
-			savedUsers = self.dao.list_users(teams=self.team)
-
 			b = []
 			for u in savedUsers:
 				user = self.dao.get_user(u['slack'])
@@ -54,7 +67,7 @@ class Listteammembers:
 					"type": "section",
 					"text": {
 						"type": "mrkdwn",
-						"text": "Escalação do time *"+self.team+"*"
+						"text": "Escalação do time *"+savedTeam['name']+"*"
 					}
 				}]
 			blocks.extend(b)
@@ -65,4 +78,5 @@ class Listteammembers:
 				}
 			)
 
-			return blocks
+		mObj = Message(blocks=blocks)
+		return mObj

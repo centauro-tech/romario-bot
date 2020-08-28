@@ -2,6 +2,8 @@
 import configparser
 import logging
 
+from message import Message
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -41,4 +43,5 @@ class Team:
 			}
 		]
 
-		return blocks
+		mObj = Message(blocks=blocks)
+		return mObj
