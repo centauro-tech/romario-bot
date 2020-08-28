@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mkdir build
-pip install -r requirements.txt -t build/
+pip3 install -r requirements.txt -t build/
 cp -R src/* build
 
 echo "deploying $lambda >>>>>>>>>"
@@ -27,6 +27,3 @@ rm src.zip
 rm -rf build
 
 echo 'End of the deploy >>>>>>>>>'
-
-#cd html
-#aws s3 cp . s3://agilemetrics.vivareal.com/ --recursive --exclude "src/*" --exclude "*/.DS_Store" --exclude ".DS_Store"

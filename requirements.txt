@@ -1,3 +1,3 @@
 requests
 slackclient
-boto
+boto3
