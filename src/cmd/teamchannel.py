@@ -33,11 +33,29 @@ class Teamchannel:
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text":  '@' + sender['name'] + ' tornou esse o campo de jogo oficial do time *' + savedTeam['name'] + '*.'
+					"text":  '@' + sender['name'] + ' tornou esse canal o campo de jogo oficial do time *' + savedTeam['name'] + '*.'
+				},
+				"accessory": {
+					"type": "image",
+					"image_url": 'https://github.com/centauro-tech/romario-bot/blob/master/html/img/soccer-field.png?raw=true',
+					"alt_text": "field"
 				}
+			},
+			{
+				"type": "actions",
+				"elements": [
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"text": "Veja a escalação do time",
+							"emoji": True
+						},
+						"value": "listteammembers_" + savedTeam['id'] + "#"
+					}
+				]
 			}
 		]
-
 
 		mObj = Message(blocks=blocks, channel=self.channel)
 		return mObj

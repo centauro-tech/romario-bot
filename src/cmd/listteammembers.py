@@ -21,9 +21,6 @@ class Listteammembers:
 		savedTeam=None
 		savedUsers=None
 
-		print(self.team)
-		print(self.team_id)
-		
 		if  self.team is not None:
 			self.team=self.team.replace('*','').replace('~','').replace('_','')
 			savedTeam = self.dao.get_saved_team(team_name=self.team)
@@ -35,6 +32,7 @@ class Listteammembers:
 
 		if savedTeam is None:
 			return 'Não existe o time ' + self.team + '  :-('
+			
 		else:
 			b = []
 			for u in savedUsers:
@@ -60,23 +58,15 @@ class Listteammembers:
 				}])
 
 			blocks =  [
-				{
-					"type": "divider"
-				},
-				{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": "Escalação do time *"+savedTeam['name']+"*"
+					{
+						"type": "header",
+						"text": {
+							"type": "plain_text",
+							"text": "Escalação do time *"+savedTeam['name']+"*"
+						}
 					}
-				}]
+				]
 			blocks.extend(b)
-
-			blocks.append(
-				{
-					"type": "divider"
-				}
-			)
 
 		mObj = Message(blocks=blocks)
 		return mObj

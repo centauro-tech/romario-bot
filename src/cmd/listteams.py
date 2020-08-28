@@ -22,7 +22,8 @@ class Listteams:
 				"type": "header",
 				"text": {
 					"type": "plain_text",
-					"text": ":woman-raising-hand:  Equipes em Tecnologia :man-raising-hand:"
+					"emoji": True,
+					"text": ":soccer: Times classificados"
 				}
 			},
 			{
@@ -37,7 +38,7 @@ class Listteams:
 					"type": "section",
 					"text": {
 						"type": "mrkdwn",
-						"text": "*" + team['name'] + "* :point_right: #" + channel['name']
+						"text": "*" + team['name'] + "*   :soccer-field: #" + channel['name']
 					},
 					"accessory": {
 						"type": "button",

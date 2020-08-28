@@ -50,7 +50,7 @@ class Dao:
 			return response['Item']
 
 
-	def save_user(self, user, leader=None, teams=None, slack=None):
+	def save_user(self, user, leader=None, teams=None, slack=None, teams_id=None):
 		savedUser = self.get_saved_user(user)
 
 		if savedUser is None:
@@ -63,15 +63,7 @@ class Dao:
 			savedUser['leader'] = leader
 
 		if teams is not None:
-			if isinstance(teams, str):
-				teamsMap = self.get_hash_value(s=teams)
-
-			elif isinstance(teams, list):
-				teamsMap = []
-				for team in teams:
-					teamsMap.append(self.get_hash_value(s=team))
-
-			savedUser['teams'] = teamsMap
+			savedUser['teams'] = teams
 
 		if slack is not None:
 			savedUser['slack'] = slack
