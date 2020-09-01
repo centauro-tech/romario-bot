@@ -32,13 +32,17 @@ class Listteams:
 		]
 
 		for team in savedTeams:
-			channel = self.dao.get_channel(channel_id=team['slack_channel'])
+			if 'slack_channel' in team:
+				channel = self.dao.get_channel(channel_id=team['slack_channel'])
+				slack_channel=':soccer-field: #' + channel['name']
+			else:
+				slack_channel=''
 
 			blocks.extend([{
 					"type": "section",
 					"text": {
 						"type": "mrkdwn",
-						"text": "*" + team['name'] + "*   :soccer-field: #" + channel['name']
+						"text": "*" + team['name'] + "*   " + slack_channel
 					},
 					"accessory": {
 						"type": "button",
