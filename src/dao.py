@@ -160,7 +160,7 @@ class Dao:
 		return ret
 
 
-	def save_team(self, team_name=None, team_channel=None, team_id=None):
+	def save_team(self, team_name=None, team_channel=None, team_id=None, tags=None):
 		savedTeam = self.get_saved_team(team_name=team_name, team_id=team_id)
 
 		if savedTeam is None:
@@ -179,6 +179,9 @@ class Dao:
 		if team_channel is not None:
 			savedTeam['slack_channel'] = team_channel
 
+		if tags is not None:
+			savedTeam['tags'] = tags
+
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
 
@@ -187,6 +190,51 @@ class Dao:
 		)
 
 		return self.get_saved_team(team_name=team_name, team_id=team_id)
+
+
+	def save_tag(self, type_tag, tag_value):
+
+		tag_id = self.get_hash_value(s=tag_value)
+		
+		tag = {
+			'id': tag_id,
+			'type': type_tag,
+			'name': tag_value
+		}
+
+		dynamodb = boto3.resource('dynamodb')
+		table = dynamodb.Table('it_teams_structure')
+		response = table.put_item(
+		   Item=tag
+		)
+
+		return response
+
+
+	def list_tags(self, type_tag):
+
+		dynamodb = boto3.resource('dynamodb')
+		table = dynamodb.Table('it_teams_structure')
+
+		key = Key('type').eq(type_tag)
+
+		ret = []
+
+		scan_kwargs = {
+			'FilterExpression': key
+		}
+
+		done = False
+		start_key = None
+		while not done:
+			if start_key:
+				scan_kwargs['ExclusiveStartKey'] = start_key
+			response = table.scan(**scan_kwargs)
+			ret.extend(response.get('Items', []))
+			start_key = response.get('LastEvaluatedKey', None)
+			done = start_key is None
+
+		return ret
 
 
 	def get_hash_value(self, s):

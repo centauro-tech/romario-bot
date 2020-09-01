@@ -51,10 +51,6 @@ class Userteams:
 			sender = self.dao.get_user(self.sender)
 			message = '_@' + sender['name'] + ' escalou @' + user['name'] + ' para o time_ *' + savedTeam['name'] + '*.'
 
-		txt = '*'+ user['profile']['real_name'] + '*\n'
-		txt += '' + user['profile']['title'] + '\n'
-		txt += '' + user['profile']['email']
-
 		blocks = [
 			{
 				"type": "header",
@@ -73,20 +69,7 @@ class Userteams:
 			{
 				"type": "divider"
 			},
-			{
-				"type": "section",
-				"text": {
-					"type": "mrkdwn",
-					"text":  txt
-				},
-				"accessory": {
-					"type": "image",
-					"image_url": user['profile']['image_512'],
-					"alt_text": "profile picture"
-				}
-			}
+			Message.get_user(user=user, savedUser['leader'])
 		]
 
-
-		mObj = Message(blocks=blocks, channel=savedTeam['slack_channel'])
-		return mObj
+		return Message(blocks=blocks, channel=savedTeam['slack_channel'])

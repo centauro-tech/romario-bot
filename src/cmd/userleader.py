@@ -22,22 +22,27 @@ class Userleader:
 		user = self.dao.get_user(savedUser['slack'])
 		leader = self.dao.get_user(self.leader)
 
-		message = None
+		savedUser = self.dao.save_user(user=user['profile']['email'], leader=leader['profile']['email'])
+
+		mObj=[]
 		if user['id'] == self.sender:
-			self.user = self.sender
-			user = self.dao.get_user(self.user)
 			message = '_@' + user['name'] + ' te escalou como técnico._'
+			mObj.append(self.get_message(message, user, self.leader))
 		
+		elif leader['id'] == self.sender:
+			message = '_@' + leader['name'] + ' se escalou como seu técnico._'
+			mObj.append(self.get_message(message, leader, savedUser['slack']))
+
 		else:
 			sender = self.dao.get_user(self.sender)
 			message = '_ @' + sender['name'] + ' te escalou como técnico de @' + user['name'] + ' _'
+			mObj.append(self.get_message(message, user, self.leader))
+			message = '_ @' + sender['name'] + ' escalou @' + leader['name'] + ' como seu técnico_'
+			mObj.append(self.get_message(message, leader,  savedUser['slack']))
 
-		savedUser = self.dao.save_user(user=user['profile']['email'], leader=leader['profile']['email'])
+		return mObj
 
-		txt = '*'+ user['profile']['real_name'] + '*\n'
-		txt += '' + user['profile']['title'] + '\n'
-		txt += '' + user['profile']['email']
-
+	def get_message(self, message, user, channel):
 		blocks = [
 			{
 				"type": "header",
@@ -56,20 +61,7 @@ class Userleader:
 			{
 				"type": "divider"
 			},
-			{
-				"type": "section",
-				"text": {
-					"type": "mrkdwn",
-					"text":  txt
-				},
-				"accessory": {
-					"type": "image",
-					"image_url": user['profile']['image_512'],
-					"alt_text": "profile picture"
-				}
-			}
+			Message.get_user(user=user)
 		]
 
-
-		mObj = Message(blocks=blocks, channel=self.leader)
-		return mObj
+		return Message(blocks=blocks, channel=channel)

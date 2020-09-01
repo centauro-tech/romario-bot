@@ -15,6 +15,7 @@ class Listteammembers:
 		self.text = message
 		self.team = None
 		self.team_id = None
+		self.sender=None
 
 	def execute(self):
 
@@ -36,26 +37,22 @@ class Listteammembers:
 		else:
 			b = []
 			for u in savedUsers:
-				user = self.dao.get_user(u['slack'])
-				txt = '*'+ user['profile']['real_name'] + '* (@' + user['name'] + ')\n'
-				txt += '' + user['profile']['title'] + '\n'
-				txt += '' + u['id']
 
-				b.extend([{
-					"type": "divider"
-				},
-				{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": txt
-					},
-					"accessory": {
-						"type": "image",
-						"image_url": user['profile']['image_512'],
-						"alt_text": "profiel picture"
-					}
-				}])
+				leader=None
+				if 'leader' in u:
+					leader = u['leader']
+
+				user = self.dao.get_user(u['slack'])
+				m = Message.get_user(user=user, leader=leader)
+
+				b.extend(
+						[
+							{
+								"type": "divider"
+							},
+							m
+						]
+					)
 
 			blocks =  [
 					{
@@ -68,5 +65,5 @@ class Listteammembers:
 				]
 			blocks.extend(b)
 
-		mObj = Message(blocks=blocks)
+		mObj = Message(blocks=blocks, channel=self.sender)
 		return mObj
