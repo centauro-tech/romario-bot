@@ -41,7 +41,7 @@ class Userteams:
 		for savedTeam in teamsLst:
 			if savedTeam['slack_channel'] is not None:
 				mObj.append(self.get_team_message(user=user, savedTeam=savedTeam, userLeader=savedUser['leader']))
-				mObj.append(self.get_user_message(user=user, savedTeam=savedTeam))
+				mObj.extend(self.get_user_message(user=user, savedTeam=savedTeam))
 				
 		return mObj	
 
@@ -79,12 +79,16 @@ class Userteams:
 
 	def get_user_message(self, user, savedTeam):
 		message = None
+		sender = None
+		mObj = []
+
 		if user['id'] == self.sender:
 			message = '_Você se escalou para o time_ *' + savedTeam['name'] + '*.'
 		
 		else:
 			sender = self.dao.get_user(self.sender)
-			message = '_@' + sender['name'] + ' te escalou para o time_ *' + savedTeam['name'] + '*.'
+			messageUser = '_@' + sender['name'] + ' te escalou para o time_ *' + savedTeam['name'] + '*.'
+			messageSender = '_ Você escalou @' + user['name'] + ' para o time_ *' + savedTeam['name'] + '*.'
 
 		channel = None
 		if 'slack_channel' in savedTeam:
@@ -103,7 +107,8 @@ class Userteams:
 					t = self.dao.get_saved_tag(type_tag='tag-team', tag_id=tag)
 					tList.append(t.get('name'))
 
-		blocks = [
+		# Send message to to the user #
+		blocksUser = [
 			{
 				"type": "header",
 				"text": {
@@ -115,7 +120,7 @@ class Userteams:
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text":  message
+					"text":  messageUser
 				}
 			},
 			{
@@ -124,4 +129,31 @@ class Userteams:
 			Message.get_team(team=savedTeam, tags=tList, channel=channel)
 		]
 
-		return Message(blocks=blocks, channel=user['id'])
+		mObj.append(Message(blocks=blocksUser, channel=user['id']))
+
+		if sender is not None:
+			# Send message to who executes the command, if differente than the user #
+			blocksSender = [
+				{
+					"type": "header",
+					"text": {
+						"type": "plain_text",
+						"text": "NOVA ESCALAÇÃO!"
+					}
+				},
+				{
+					"type": "section",
+					"text": {
+						"type": "mrkdwn",
+						"text":  messageSender
+					}
+				},
+				{
+					"type": "divider"
+				},
+				Message.get_team(team=savedTeam, tags=tList, channel=channel)
+			]
+
+			mObj.append(Message(blocks=blocksSender, channel=sender['id']))
+
+		return mObj
