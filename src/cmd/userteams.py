@@ -80,7 +80,7 @@ class Userteams:
 	def get_user_message(self, user, savedTeam):
 		message = None
 		if user['id'] == self.sender:
-			message = 'você se escalou para o time_ *' + savedTeam['name'] + '*.'
+			message = '_Você se escalou para o time_ *' + savedTeam['name'] + '*.'
 		
 		else:
 			sender = self.dao.get_user(self.sender)
