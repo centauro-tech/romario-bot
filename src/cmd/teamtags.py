@@ -18,5 +18,8 @@ class Teamtags:
 		self.sender=None
 
 	def execute(self):
-		savedTeam = self.dao.save_team(team_id=self.team, tags=self.tags)				
+		ts = []
+		if self.tags is not None:
+			savedTeam = self.dao.save_team(team_id=self.team, tags=self.tags)
+
 		return None

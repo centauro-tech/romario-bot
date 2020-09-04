@@ -72,7 +72,7 @@ class User1ststep:
 						"text": "selecione..."
 					},
 					"options": opt,
-					"action_id": "user_select_teams_" + savedUser['id'] + "#"
+					"action_id": "user_select_teams_" + user['id'] + "#"
 				}
 			}
 		]
