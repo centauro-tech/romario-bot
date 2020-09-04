@@ -42,7 +42,6 @@ class Dao:
 				return ret
 
 	def get_saved_user(self, user=None):
-
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
 		response = table.get_item(Key={'id': user, 'type': 'user'})
@@ -50,7 +49,7 @@ class Dao:
 			return response['Item']
 
 
-	def save_user(self, user, leader=None, teams=None, slack=None):
+	def save_user(self, user, leader=None, teams=None, slack=None, teams_id=None):
 		savedUser = self.get_saved_user(user)
 
 		if savedUser is None:
@@ -63,15 +62,7 @@ class Dao:
 			savedUser['leader'] = leader
 
 		if teams is not None:
-			if isinstance(teams, str):
-				teamsMap = self.get_hash_value(s=teams)
-
-			elif isinstance(teams, list):
-				teamsMap = []
-				for team in teams:
-					teamsMap.append(self.get_hash_value(s=team))
-
-			savedUser['teams'] = teamsMap
+			savedUser['teams'] = teams
 
 		if slack is not None:
 			savedUser['slack'] = slack
@@ -85,7 +76,6 @@ class Dao:
 		return self.get_saved_user(user=user)
 
 	def list_users(self, user=None, leader=None, teams=None, team_id=None):
-
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
 
@@ -136,7 +126,7 @@ class Dao:
 		else:
 			return None
 
-	def list_teams(self, team_name=None, slack_channel=None):
+	def list_teams(self, team_name=None, slack_channel=None, tags=None):
 
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
@@ -148,6 +138,10 @@ class Dao:
 
 		if slack_channel is not None:
 			key = key & Key('slack_channel').eq(slack_channel)
+
+		if tags is not None:
+			print(tags)
+			key = key & Attr('tags').contains(tags)
 
 		ret = []
 
@@ -168,7 +162,7 @@ class Dao:
 		return ret
 
 
-	def save_team(self, team_name=None, team_channel=None, team_id=None):
+	def save_team(self, team_name=None, team_channel=None, team_id=None, tags=None):
 		savedTeam = self.get_saved_team(team_name=team_name, team_id=team_id)
 
 		if savedTeam is None:
@@ -187,6 +181,9 @@ class Dao:
 		if team_channel is not None:
 			savedTeam['slack_channel'] = team_channel
 
+		if tags is not None:
+			savedTeam['tags'] = tags
+
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
 
@@ -197,5 +194,66 @@ class Dao:
 		return self.get_saved_team(team_name=team_name, team_id=team_id)
 
 
+	def save_tag(self, type_tag, tag_value):
+
+		tag_id = self.get_hash_value(s=tag_value)
+		
+		tag = {
+			'id': tag_id,
+			'type': type_tag,
+			'name': tag_value
+		}
+
+		dynamodb = boto3.resource('dynamodb')
+		table = dynamodb.Table('it_teams_structure')
+		response = table.put_item(
+		   Item=tag
+		)
+
+		return response
+
+
+	def list_tags(self, type_tag):
+
+		dynamodb = boto3.resource('dynamodb')
+		table = dynamodb.Table('it_teams_structure')
+
+		key = Key('type').eq(type_tag)
+
+		ret = []
+
+		scan_kwargs = {
+			'FilterExpression': key
+		}
+
+		done = False
+		start_key = None
+		while not done:
+			if start_key:
+				scan_kwargs['ExclusiveStartKey'] = start_key
+			response = table.scan(**scan_kwargs)
+			ret.extend(response.get('Items', []))
+			start_key = response.get('LastEvaluatedKey', None)
+			done = start_key is None
+
+		return ret
+
+
+	def get_saved_tag(self, type_tag, tag_id=None, tag_name=None):
+
+		dynamodb = boto3.resource('dynamodb')
+		table = dynamodb.Table('it_teams_structure')
+
+		if tag_id is not None:
+			response = table.get_item(Key={'id': tag_id, 'type': type_tag})
+
+		if tag_name is not None:
+			response = table.get_item(Key={'id': self.get_hash_value(tag_name), 'type': type_tag})			
+
+		if 'Item' in response:
+			return response['Item']
+		else:
+			return None
+
 	def get_hash_value(self, s):
-		return str(int(hashlib.sha256(s.lower().encode('utf-8')).hexdigest(), 16) % 10**8)
+		return str(int(hashlib.sha256(s.strip().lower().encode('utf-8')).hexdigest(), 16) % 10**8)

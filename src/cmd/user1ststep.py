@@ -22,6 +22,7 @@ class User1ststep:
 		savedUser = self.dao.get_saved_user(user['profile']['email'])
 		if savedUser is None:
 			savedUser = self.dao.save_user(user=user['profile']['email'], slack=user['id'])
+
 		logger.info('dynamoDB user: ' + str(savedUser))
 
 		teams = self.dao.list_teams()
@@ -71,7 +72,7 @@ class User1ststep:
 						"text": "selecione..."
 					},
 					"options": opt,
-					"action_id": "user_select_teams_" + savedUser['id'] + "#"
+					"action_id": "user_select_teams_" + user['id'] + "#"
 				}
 			}
 		]

@@ -87,11 +87,12 @@ def handler(event, context):
 					config.read('command.cfg')
 					msg = Message(message=config.get('default-messages', 'command-not-found'))
 
-				if isinstance(msg, list):
-					for message in msg:
-						ret = parser.send_message(message)
-				else:
-					ret = parser.send_message(msg)
+				if msg is not None:
+					if isinstance(msg, list):
+						for message in msg:
+							ret = parser.send_message(message)
+					else:
+						ret = parser.send_message(msg)
 
 			else:
 				ret = get_return(False, 'invalid command')

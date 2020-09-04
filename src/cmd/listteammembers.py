@@ -15,15 +15,13 @@ class Listteammembers:
 		self.text = message
 		self.team = None
 		self.team_id = None
+		self.sender=None
 
 	def execute(self):
 
 		savedTeam=None
 		savedUsers=None
 
-		print(self.team)
-		print(self.team_id)
-		
 		if  self.team is not None:
 			self.team=self.team.replace('*','').replace('~','').replace('_','')
 			savedTeam = self.dao.get_saved_team(team_name=self.team)
@@ -35,48 +33,37 @@ class Listteammembers:
 
 		if savedTeam is None:
 			return 'Não existe o time ' + self.team + '  :-('
+			
 		else:
 			b = []
 			for u in savedUsers:
-				user = self.dao.get_user(u['slack'])
-				txt = '*'+ user['profile']['real_name'] + '* (@' + user['name'] + ')\n'
-				txt += '' + user['profile']['title'] + '\n'
-				txt += '' + u['id']
 
-				b.extend([{
-					"type": "divider"
-				},
-				{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": txt
-					},
-					"accessory": {
-						"type": "image",
-						"image_url": user['profile']['image_512'],
-						"alt_text": "profiel picture"
-					}
-				}])
+				leader=None
+				if 'leader' in u:
+					leader = u['leader']
+
+				user = self.dao.get_user(u['slack'])
+				m = Message.get_user(user=user, leader=leader)
+
+				b.extend(
+						[
+							{
+								"type": "divider"
+							},
+							m
+						]
+					)
 
 			blocks =  [
-				{
-					"type": "divider"
-				},
-				{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": "Escalação do time *"+savedTeam['name']+"*"
+					{
+						"type": "header",
+						"text": {
+							"type": "plain_text",
+							"text": "Escalação do time *"+savedTeam['name']+"*"
+						}
 					}
-				}]
+				]
 			blocks.extend(b)
 
-			blocks.append(
-				{
-					"type": "divider"
-				}
-			)
-
-		mObj = Message(blocks=blocks)
+		mObj = Message(blocks=blocks, channel=self.sender)
 		return mObj

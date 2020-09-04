@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import configparser
 import logging
+import re
 
 from message import Message
 
@@ -13,16 +14,32 @@ class Listteams:
 	def __init__(self, dao, message):
 		self.dao = dao
 		self.text = message
+		self.tags = None
 
 	def execute(self):
-		savedTeams = self.dao.list_teams()
+		if self.tags is None:
+			savedTeams = self.dao.list_teams()
+		else:
+			tagsList = re.split(',| e ', self.tags)
+
+			tList = []
+			for tag in tagsList:
+				t = self.dao.get_saved_tag(type_tag='tag-team', tag_name=tag)
+				if t is not None:
+					tList.append(t.get('id'))
+
+			if len(tList) == 1:
+				tList = tList[0]
+
+			savedTeams = self.dao.list_teams(tags=tList)
 
 		blocks = [
 			{
 				"type": "header",
 				"text": {
 					"type": "plain_text",
-					"text": ":woman-raising-hand:  Equipes em Tecnologia :man-raising-hand:"
+					"emoji": True,
+					"text": ":soccer: Times classificados" + (("\ncom as tags " + self.tags) if self.tags is not None else '')
 				}
 			},
 			{
@@ -31,28 +48,23 @@ class Listteams:
 		]
 
 		for team in savedTeams:
-			channel = self.dao.get_channel(channel_id=team['slack_channel'])
+			channel = None
+			if 'slack_channel' in team:
+				channel = self.dao.get_channel(channel_id=team['slack_channel'])
 
-			blocks.extend([{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": "*" + team['name'] + "* :point_right: #" + channel['name']
-					},
-					"accessory": {
-						"type": "button",
-						"text": {
-							"type": "plain_text",
-							"emoji": True,
-							"text": "Escalação"
-						},
-						"value": "listteammembers_" + team['id'] + "#"
-					}
-				},
-				{
-					"type": "divider"
-				}
-			])
+			if 'tags' in team:
+				tList = []
+
+				if isinstance(team['tags'], str):
+					t = self.dao.get_saved_tag(type_tag='tag-team', tag_id=team['tags'])
+					tList.append(t.get('name'))
+
+				elif isinstance(team['tags'], list):
+					for tag in team['tags']:
+						t = self.dao.get_saved_tag(type_tag='tag-team', tag_id=tag)
+						tList.append(t.get('name'))
+
+			blocks.extend([Message.get_team(team=team, tags=tList, channel=channel),{"type": "divider"}])
 
 		blocks.append({
 			"type": "context",
