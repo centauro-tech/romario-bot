@@ -159,19 +159,25 @@ def find_command_arguments(message, command, commandName):
 # Format the return message
 def get_return(success, message):
 	if success:
-		code = 200
-	else:
-		code = 500
+		ret = {
+			"statusCode": 200,
+			"isBase64Encoded": False,
+			"headers": {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*"
+			}
+		}
 
-	ret = {
-		"statusCode": code,
-		"isBase64Encoded": False,
-		"headers": {
-			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*"
-		}, 
-		'body': json.dumps(message)
-	}
+	else:
+		ret = {
+			"statusCode": 500,
+			"isBase64Encoded": False,
+			"headers": {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*"
+			}, 
+			'body': json.dumps(message)
+		}
 
 	logger.info('return: ' + json.dumps(ret))
 
