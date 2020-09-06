@@ -14,7 +14,6 @@ class Team:
 		self.dao = dao
 		self.text = message
 		self.team = None
-		self.channel = None
 
 	def execute(self):
 		self.team=self.team.replace('*','').replace('~','').replace('_','')
@@ -36,6 +35,7 @@ class Team:
 								"value": "team_tag_" + t['id'] + '#'
 							})
 
+
 		blocks = [
 			{
 				"type": "section",
@@ -54,25 +54,63 @@ class Team:
 				}
 			},
 			{
+				"type": "divider"
+			},
+			{
 				"type": "section",
 				"text": {
-					"type": "mrkdwn",
-					"text": "Adicione TAGs ao time"
-				},
-				"accessory": {
-					"type": "multi_static_select",
-					"placeholder": {
-						"type": "plain_text",
-						"text": "selecione..."
-					},
-					"options": opt,
-					"action_id": "add_tag_team_" + savedTeam['id'] + "#"
+					"type": "plain_text",
+					"text": "Adicione informações à ficha técnica",
+					"emoji": True
 				}
+			},
+			{
+				"type": "actions",
+				"elements": [
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": ":label: Tags"
+						},
+						"value": "add_tech_info_tag_" + savedTeam['id'] + "#"
+					},
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": ":link: Link"
+						},
+						"value": "add_tech_info_link_" + savedTeam['id'] + "#"
+					},
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": ":newspaper: Texto"
+						},
+						"value": "add_tech_info_text_" + savedTeam['id'] + "#"
+					},
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": ":email: Email"
+						},
+						"value": "add_tech_info_email_" + savedTeam['id'] + "#"
+					}
+
+				]
 			}
 		]
 
-		if 'slack_channel' in savedTeam:
-			blocks[0]['accessory']['initial_channel']=savedTeam['slack_channel']
+		#if 'slack_channel' in savedTeam:
+			#blocks[2]['accessory']['initial_channel']=savedTeam['slack_channel']
+
 
 		mObj = Message(blocks=blocks)
 		return mObj

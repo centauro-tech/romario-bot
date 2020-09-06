@@ -6,11 +6,12 @@ logger.setLevel(logging.INFO)
 
 class Message:
 
-	def __init__(self, message=None, channel=None, sender=None, blocks=None):
+	def __init__(self, message=None, channel=None, sender=None, blocks=None, trigger_id=None):
 		self.message = message
 		self.channel = channel
 		self.sender = sender
 		self.blocks = blocks
+		self.trigger_id = trigger_id
 
 	@staticmethod
 	def get_user(user, leader=None):

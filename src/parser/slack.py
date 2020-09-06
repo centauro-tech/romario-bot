@@ -22,8 +22,12 @@ class Slack:
 		if 'event' in event:
 			self.event = str(event['event'])
 
-		if 'type' in event and 'block_actions' == event['type'] :
+		if 'type' in event and 'block_actions' == event['type']:
 			event['message'] = None
+			self.event = str(event)
+
+		if 'type' in event and 'view_submission' == event['type']:
+			event['view']['blocks'] = None
 			self.event = str(event)
 
 		if 'event' in event and 'user' in event['event']:
@@ -42,17 +46,26 @@ class Slack:
 	def send_message(self, message):
 		ret = None
 
-		channel=self.channel
 		if message.channel is not None:
 			channel=message.channel
+		elif self.channel is not None:
+			channel=self.channel
 
-		ret = client.chat_postMessage(
-		  channel=channel,
-		  blocks=message.blocks,
-		  text=message.message,
-		  mrkdwn=True
-		)
-			
+		if message.trigger_id is None:
+			ret = client.chat_postMessage(
+			  channel=channel,
+			  blocks=message.blocks,
+			  text=message.message,
+			  mrkdwn=True
+			)
+
+		else:
+			ret = client.views_open(
+			  trigger_id=message.trigger_id,
+			  view=message.blocks
+			)
+
+
 		ret = ret.data
 
 		return ret
