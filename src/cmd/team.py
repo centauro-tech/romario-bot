@@ -22,6 +22,18 @@ class Team:
 		if savedTeam is None:
 			savedTeam = self.dao.save_team(team_name=self.team, team_id=self.dao.get_hash_value(s=self.team))
 
+		tags = self.dao.list_tags(type_tag='tag-team')
+
+		opt = []
+		if len(tags) > 0:
+			for t in tags:
+				opt.append({
+								"text": {
+									"type": "plain_text",
+									"text": t['name']
+								},
+								"value": "team_tag_" + t['id'] + '#'
+							})
 
 
 		blocks = [
@@ -98,6 +110,7 @@ class Team:
 
 		#if 'slack_channel' in savedTeam:
 			#blocks[2]['accessory']['initial_channel']=savedTeam['slack_channel']
+
 
 		mObj = Message(blocks=blocks)
 		return mObj

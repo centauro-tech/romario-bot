@@ -162,6 +162,7 @@ class Dao:
 		return ret
 
 
+
 	def save_team(self, team_name=None, team_channel=None, team_id=None, tags=None, tech_info=None):
 		savedTeam = self.get_saved_team(team_name=team_name, team_id=team_id)
 
@@ -188,7 +189,7 @@ class Dao:
 			if 'tech_info' not in savedTeam:
 				savedTeam['tech_info'] = []
 			savedTeam.get('tech_info').append(tech_info)
-
+      
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
 
