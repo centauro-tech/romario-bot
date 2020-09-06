@@ -14,17 +14,31 @@ class Team:
 		self.dao = dao
 		self.text = message
 		self.team = None
+		self.team_id = None
 
 	def execute(self):
-		self.team=self.team.replace('*','').replace('~','').replace('_','')
-		savedTeam = self.dao.get_saved_team(self.team)
-		
-		if savedTeam is None:
+		if  self.team is not None:
+			self.team=self.team.replace('*','').replace('~','').replace('_','')
 			savedTeam = self.dao.save_team(team_name=self.team, team_id=self.dao.get_hash_value(s=self.team))
+		
+		elif self.team_id is not None:
+			savedTeam = self.dao.get_saved_team(team_id=self.team_id)
 
+		if savedTeam is None:
+			return 'Não existe o time ' + self.team + '  :-('
 
 
 		blocks = [
+			{
+				"type": "header",
+				"text": {
+					"type": "plain_text",
+					"text": ":gear:   Configuração do time " + savedTeam['name'] + "  :gear:"
+				}
+			},
+			{
+				"type": "divider"
+			},
 			{
 				"type": "section",
 				"text": {
@@ -38,7 +52,8 @@ class Team:
 						"text": "selecione...",
 						"emoji": True
 					},
-					"action_id": "team_select_channel_" + savedTeam['id'] + "#"
+					"action_id": "team_select_channel_" + savedTeam['id'] + "#",
+					"initial_channel": savedTeam['slack_channel']
 				}
 			},
 			{
@@ -95,9 +110,6 @@ class Team:
 				]
 			}
 		]
-
-		#if 'slack_channel' in savedTeam:
-			#blocks[2]['accessory']['initial_channel']=savedTeam['slack_channel']
 
 		mObj = Message(blocks=blocks)
 		return mObj
