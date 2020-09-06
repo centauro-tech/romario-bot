@@ -51,7 +51,7 @@ class Teamchannel:
 							"text": "Veja a escalação do time",
 							"emoji": True
 						},
-						"value": "listteammembers_" + savedTeam['id'] + "#"
+						"value": ":soccer-field: listteammembers_" + savedTeam['id'] + "#"
 					}
 				]
 			}

@@ -5,7 +5,6 @@ import json
 
 from slack import WebClient
 from slack.errors import SlackApiError
-
 from message import Message
 
 logger = logging.getLogger()
@@ -14,7 +13,6 @@ logger.setLevel(logging.INFO)
 client = WebClient(token=os.environ['sl_token'], ssl=False)
 
 class Slack:
-
 	def __init__(self, event):
 		if 'event' in event and 'subtype' in event['event'] and event['event']['subtype'] == 'bot_message':
 			return

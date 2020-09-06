@@ -59,7 +59,7 @@ class Listteammembers:
 						"type": "header",
 						"text": {
 							"type": "plain_text",
-							"text": "Escalação do time *"+savedTeam['name']+"*"
+							"text": ":soccer:   Escalação do time *"+savedTeam['name']+"*   :soccer:"
 						}
 					}
 				]

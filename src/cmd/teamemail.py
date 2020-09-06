@@ -33,3 +33,43 @@ class Teamemail:
 			mObj.append(Message(message='Email adicionado com sucesso ao time ' + savedTeam['name'], channel=self.sender))
 
 		return mObj
+
+	def get_block(self, message):
+
+		blocks = [
+			{
+				"type": "header",
+				"text": {
+					"type": "plain_text",
+					"text": ":email:   FICHA TÉCNICA!"
+				}
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text":  message
+				},
+				"accessory": {
+					"type": "image",
+					"image_url": 'https://github.com/centauro-tech/romario-bot/blob/master/html/img/soccer-field.png?raw=true',
+					"alt_text": "field"
+				}
+			},
+			{
+				"type": "actions",
+				"elements": [
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"text": "Veja a escalação do time",
+							"emoji": True
+						},
+						"value": ":soccer-field: listteammembers_" + savedTeam['id'] + "#"
+					}
+				]
+			}
+		]
+
+		return blocks
