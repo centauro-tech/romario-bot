@@ -27,6 +27,19 @@ class Team:
 		if savedTeam is None:
 			return 'Não existe o time ' + self.team + '  :-('
 
+		tags = self.dao.list_tags(type_tag='tag-team')
+
+		opt = []
+		if len(tags) > 0:
+			for t in tags:
+				opt.append({
+								"text": {
+									"type": "plain_text",
+									"text": t['name']
+								},
+								"value": "team_tag_" + t['id'] + '#'
+							})
+
 
 		blocks = [
 			{
@@ -110,6 +123,10 @@ class Team:
 				]
 			}
 		]
+
+		#if 'slack_channel' in savedTeam:
+			#blocks[2]['accessory']['initial_channel']=savedTeam['slack_channel']
+
 
 		mObj = Message(blocks=blocks)
 		return mObj

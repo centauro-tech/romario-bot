@@ -191,7 +191,7 @@ class Dao:
 
 		if tech_info_lst is not None:
 			savedTeam['tech_info'] = tech_info_lst
-
+      
 		dynamodb = boto3.resource('dynamodb')
 		table = dynamodb.Table('it_teams_structure')
 
