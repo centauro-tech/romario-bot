@@ -13,7 +13,6 @@ class Message:
 		self.blocks = blocks
 		self.trigger_id = trigger_id
 
-
 	@staticmethod
 	def get_user(user, leader=None):
 
