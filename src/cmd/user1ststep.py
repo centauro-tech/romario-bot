@@ -23,37 +23,26 @@ class User1ststep:
 		if savedUser is None:
 			savedUser = self.dao.save_user(user=user['profile']['email'], slack=user['id'])
 
-		logger.info('dynamoDB user: ' + str(savedUser))
+		leader_acessory = {
+			"type": "users_select",
+			"placeholder": {
+				"type": "plain_text",
+				"text": "Select a user",
+				"emoji": True
+			},
+			"action_id": "user_select_leader_" + savedUser['id'] + '#'
+		}
 
-		teams = self.dao.list_teams()
-		logger.info('dynamoDB teams: ' + str(teams))
-		
-		opt = []
-		if len(teams) > 0:
-			for t in teams:
-				opt.append({
-								"text": {
-									"type": "plain_text",
-									"text": t['name']
-								},
-								"value": "user_select_team_" + t['id'] + '#'
-							})
+		if 'leader' in savedUser:
+			leader = self.dao.get_user(savedUser['leader'])
+			leader_acessory['initial_user'] = leader['id'] 
 
 		blocks = [
 			{
-				"type": "section",
+				"type": "header",
 				"text": {
-					"type": "mrkdwn",
-					"text": "Selecione sua liderança"
-				},
-				"accessory": {
-					"type": "users_select",
-					"placeholder": {
-						"type": "plain_text",
-						"text": "Select a user",
-						"emoji": True
-					},
-					"action_id": "user_select_leader_" + savedUser['id'] + '#'
+					"type": "plain_text",
+					"text": ":gear:   Perfil esportivo de " + user['name'] + "  :gear:"
 				}
 			},
 			{
@@ -63,17 +52,43 @@ class User1ststep:
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text": "Selecione seus times"
+					"text": "Selecione sua liderança"
 				},
-				"accessory": {
-					"type": "multi_static_select",
-					"placeholder": {
-						"type": "plain_text",
-						"text": "selecione..."
-					},
-					"options": opt,
-					"action_id": "user_select_teams_" + user['id'] + "#"
+				"accessory": leader_acessory
+			},
+			{
+				"type": "divider"
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "plain_text",
+					"text": "Adicione informações à ficha técnica",
+					"emoji": True
 				}
+			},
+			{
+				"type": "actions",
+				"elements": [
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": ":shield: Times"
+						},
+						"value": "add_tech_info_userteam_" + savedUser['id'] + "#"
+					},
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"emoji": True,
+							"text": ":label: Tags"
+						},
+						"value": "add_tech_info_usertag_" + savedUser['id'] + "#"
+					}
+				]
 			}
 		]
 

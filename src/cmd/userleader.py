@@ -20,29 +20,28 @@ class Userleader:
 	def execute(self):
 		savedUser = self.dao.get_saved_user(self.user)
 		user = self.dao.get_user(savedUser['slack'])
-		leader = self.dao.get_user(self.leader)
-
-		savedUser = self.dao.save_user(user=user['profile']['email'], leader=leader['profile']['email'])
+		savedUser = self.dao.save_user(user=user['profile']['email'], leader=self.leader)
 
 		mObj=[]
 		if user['id'] == self.sender:
-			message = '_@' + user['name'] + ' te escalou como técnico._'
-			mObj.append(self.get_message(message, user, self.leader))
+			message = '<@' + user['id'] + '> _te escalou sua liderança._'
+			mObj.append(self.get_message(message, user, self.leader, savedUser))
 		
-		elif leader['id'] == self.sender:
-			message = '_@' + leader['name'] + ' se escalou como seu técnico._'
+		elif self.leader == self.sender:
+			leader = self.dao.get_user(self.leader)
+			message = '<@' + self.leader + '> _se escalou como sua liderança._'
 			mObj.append(self.get_message(message, leader, savedUser['slack']))
 
 		else:
-			sender = self.dao.get_user(self.sender)
-			message = '_ @' + sender['name'] + ' te escalou como técnico de @' + user['name'] + ' _'
-			mObj.append(self.get_message(message, user, self.leader))
-			message = '_ @' + sender['name'] + ' escalou @' + leader['name'] + ' como seu técnico_'
-			mObj.append(self.get_message(message, leader,  savedUser['slack']))
+			leader = self.dao.get_user(self.leader)
+			message = '<@' + self.sender + '> _te escalou como liderança de_ <@' + user['id'] + '>'
+			mObj.append(self.get_message(message, user, self.leader, savedUser))
+			message = '<@' + self.sender + '> _escalou_ <@' + self.leader + '> _como sua liderança_'
+			mObj.append(self.get_message(message, leader, savedUser['slack']))
 
 		return mObj
 
-	def get_message(self, message, user, channel):
+	def get_message(self, message, user, channel, savedUser=None):
 		blocks = [
 			{
 				"type": "header",
@@ -61,7 +60,7 @@ class Userleader:
 			{
 				"type": "divider"
 			},
-			Message.get_user(user=user)
+			Message.get_user(dao=self.dao, user=user, savedUser=savedUser)
 		]
 
 		return Message(blocks=blocks, channel=channel)

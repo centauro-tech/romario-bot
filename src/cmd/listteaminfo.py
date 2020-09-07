@@ -33,6 +33,7 @@ class Listteaminfo:
 			return 'Não existe o time ' + self.team + '  :-('
 			
 		else:
+
 			blocks =  [
 				{
 					"type": "header",
@@ -46,6 +47,19 @@ class Listteaminfo:
 				}
 			]
 
+			if 'slack_channel' in savedTeam:
+				blocks.extend([{
+						"type": "section",
+						"text": {
+							"type": "mrkdwn",
+							"text": "*:soccer-field: Campo de jogo:*   <#" + savedTeam['slack_channel'] + ">"
+						}
+					},
+					{
+						"type": "divider"
+					}]
+				)
+
 			blocks.extend(self.get_tags(tags=savedTeam['tags'], savedTeam=savedTeam))
 			blocks.append({"type": "divider"})
 
@@ -53,14 +67,13 @@ class Listteaminfo:
 				tech_info_lst = savedTeam['tech_info']
 				tech_info_lst.reverse()
 
-				for count, tech_info in enumerate(tech_info_lst):
-					idx = (len(tech_info_lst) - count - 1)
+				for tech_info in tech_info_lst:
 					if tech_info['type'] == 'team-text':
-						blocks.extend(self.get_text(tech_info=tech_info, id=idx, savedTeam=savedTeam))
+						blocks.extend(self.get_text(tech_info=tech_info, savedTeam=savedTeam))
 					elif tech_info['type'] == 'team-link':
-						blocks.extend(self.get_link(tech_info=tech_info, id=idx, savedTeam=savedTeam))
+						blocks.extend(self.get_link(tech_info=tech_info, savedTeam=savedTeam))
 					elif tech_info['type'] == 'team-email':
-						blocks.extend(self.get_email(tech_info=tech_info, id=idx, savedTeam=savedTeam))
+						blocks.extend(self.get_email(tech_info=tech_info, savedTeam=savedTeam))
 					blocks.append({"type": "divider"})
 
 			blocks.append({
@@ -91,51 +104,51 @@ class Listteaminfo:
 		return mObj
 
 	
-	def get_text(self, tech_info, id, savedTeam):
+	def get_text(self, tech_info, savedTeam):
 		blocks = [
 			{
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text": ":newspaper:   *"+tech_info['id']+"*"
+					"text": ":newspaper:   *"+tech_info['desc']+"*"
 				}
 			},
 			{
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text": tech_info['desc'],
+					"text": tech_info['value'],
 					"verbatim": False
 				},
-				"accessory": self.get_delete_button(id, savedTeam)
+				"accessory": self.get_delete_button(tech_info['id'], savedTeam)
 			}
 		]
 		return blocks
 
 
-	def get_email(self, tech_info, id, savedTeam):
+	def get_email(self, tech_info, savedTeam):
 		blocks = [
 			{
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text": ":email:   *"+tech_info['id']+"*: \n"+tech_info['desc']
+					"text": ":email:   *"+tech_info['desc']+"*: \n"+tech_info['value']
 				},
-				"accessory": self.get_delete_button(id, savedTeam)
+				"accessory": self.get_delete_button(tech_info['id'], savedTeam)
 			}
 		]
 		return blocks
 	
 
-	def get_link(self, tech_info, id, savedTeam):
+	def get_link(self, tech_info, savedTeam):
 		blocks = [
 			{
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text": ":link:   *<"+tech_info['desc']+"|"+tech_info['id']+">*"
+					"text": ":link:   *<"+tech_info['value']+"|"+tech_info['desc']+">*"
 				},
-				"accessory": self.get_delete_button(id, savedTeam)
+				"accessory": self.get_delete_button(tech_info['id'], savedTeam)
 			}
 		]
 		return blocks

@@ -64,7 +64,7 @@ class Listteams:
 						t = self.dao.get_saved_tag(type_tag='tag-team', tag_id=tag)
 						tList.append(t.get('name'))
 
-			blocks.extend([Message.get_team(team=team, tags=tList, channel=channel),{"type": "divider"}])
+			blocks.extend([Message.get_team(dao=self.dao, team=team),{"type": "divider"}])
 
 		blocks.append({
 			"type": "context",

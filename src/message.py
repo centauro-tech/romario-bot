@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import dao
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -14,13 +15,47 @@ class Message:
 		self.trigger_id = trigger_id
 
 	@staticmethod
-	def get_user(user, leader=None):
+	def get_user(dao, user=None, savedUser=None):
+		if user is None and savedUser is not None:
+			user = dao.get_user(user=savedUser['slack'])
+		if user is not None and savedUser is None:
+			savedUser = dao.get_saved_user(user=user['profile']['email'])
 
-		txt = '*'+ user['profile']['real_name'] + '* (@' + user['name'] + ')\n'
-		txt += '' + user['profile']['title'] + '\n'
-		txt += 'Email: ' + user['profile']['email']  + '\n'
-		if leader is not None:
-			txt += 'Líder: ' + leader
+		tList=None
+		if savedUser is not None and 'tags' in savedUser:
+			tList = []
+			if isinstance(savedUser['tags'], str):
+				t = dao.get_saved_tag(type_tag='tag-user', tag_id=savedUser['tags'])
+				tList.append(t.get('name'))
+
+			elif isinstance(savedUser['tags'], list):
+				for tag in savedUser['tags']:
+					t = dao.get_saved_tag(type_tag='tag-user', tag_id=tag)
+					tList.append(t.get('name'))
+
+		teamList=None
+		if savedUser is not None and 'teams' in savedUser:
+			teamList = []
+			if isinstance(savedUser['teams'], str):
+				t = dao.get_saved_tag(type_tag='team', tag_id=savedUser['teams'])
+				teamList.append(t.get('name'))
+
+			elif isinstance(savedUser['teams'], list):
+				for team in savedUser['teams']:
+					t = dao.get_saved_tag(type_tag='team', tag_id=team)
+					teamList.append(t.get('name'))
+
+
+		txt = '*'+ user['profile']['real_name'] + '* - <@' + user['id'] + '>\n'
+
+		if savedUser is not None and 'leader' in savedUser:
+			txt += '*Líder:* <@' + savedUser['leader'] + '>'
+
+		if tList is not None and len(tList) > 0:
+			txt += "\n*Times:* " + (', '.join(teamList))
+
+		if tList is not None and len(tList) > 0:
+			txt += "\n*Tags:* " + (', '.join(tList))
 
 		ret = {
 			"type": "section",
@@ -39,14 +74,26 @@ class Message:
 
 
 	@staticmethod
-	def get_team(team, tags=None, channel=None):
-		if channel is not None:
-			slack_channel=':soccer-field: #' + channel['name']
-		else:
-			slack_channel=''
+	def get_team(dao, team):
 
-		if tags is not None and len(tags) > 0:
-			tags_txt = "\n*Tags:* " + (', '.join(tags))
+		slack_channel=''
+		if 'slack_channel' in team:
+			slack_channel='\n*Campo de jogo:* :soccer-field: <#' + team['slack_channel'] + '>'
+
+		tList=None
+		if 'tags' in team:
+			tList = []
+			if isinstance(team['tags'], str):
+				t = dao.get_saved_tag(type_tag='tag-team', tag_id=team['tags'])
+				tList.append(t.get('name'))
+
+			elif isinstance(team['tags'], list):
+				for tag in team['tags']:
+					t = dao.get_saved_tag(type_tag='tag-team', tag_id=tag)
+					tList.append(t.get('name'))
+
+		if tList is not None and len(tList) > 0:
+			tags_txt = "\n*Tags:* " + (', '.join(tList))
 		else:
 			tags_txt=''
 
@@ -54,7 +101,7 @@ class Message:
 				"type": "section",
 				"text": {
 					"type": "mrkdwn",
-					"text": "*" + team['name'] + "*   " + slack_channel + tags_txt
+					"text": "*Nome do time:* " + team['name'] + slack_channel + tags_txt
 				},
 				"accessory": {
 					"type": "button",

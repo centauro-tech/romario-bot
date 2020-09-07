@@ -19,8 +19,8 @@ class Userteams:
 
 	def execute(self):
 		user = self.dao.get_user(user=self.user)
+		savedUser = self.dao.get_saved_user(user=user['profile']['email'])
 
-		savedUser = None
 		teamsLst = []
 		if self.teams is not None:
 			if isinstance(self.teams, str):
@@ -28,24 +28,30 @@ class Userteams:
 					savedTeam = self.dao.get_saved_team(team_id=self.teams)
 				else:
 					savedTeam = self.dao.get_saved_team(team_name=self.teams)
-				
-				teamsLst.append(savedTeam)
-				savedUser = self.dao.save_user(user=user['profile']['email'], teams=savedTeam['id'])
+
+				if (savedUser is None) or ('teams' not in savedUser) or ('teams' in savedUser and savedTeam['id'] not in savedUser['teams']):
+					teamsLst.append(savedTeam)
+					
+				savedUser = self.dao.save_user(user=user['profile']['email'], teams=savedTeam['id'], slack=user['id'])
 
 			elif isinstance(self.teams, list):
-				savedUser = self.dao.save_user(user=user['profile']['email'], teams=self.teams)
 				for team in self.teams:
-					teamsLst.append(self.dao.get_saved_team(team_id=team))
+					if (savedUser is None) or ('teams' not in savedUser) or ('teams' in savedUser and team not in savedUser['teams']):
+						savedTeam = self.dao.get_saved_team(team_id=team)
+						teamsLst.append(savedTeam)
+
+				savedUser = self.dao.save_user(user=user['profile']['email'], teams=self.teams, slack=user['id'])
+
 
 		mObj = []
 		for savedTeam in teamsLst:
-			if savedTeam['slack_channel'] is not None:
-				mObj.append(self.get_team_message(user=user, savedTeam=savedTeam, userLeader=savedUser['leader']))
+			if 'slack_channel' in savedTeam and savedTeam['slack_channel'] is not None:
+				mObj.append(self.get_team_message(user=user, savedTeam=savedTeam))
 				mObj.extend(self.get_user_message(user=user, savedTeam=savedTeam))
 				
 		return mObj	
 
-	def get_team_message(self, user, savedTeam, userLeader):
+	def get_team_message(self, user, savedTeam):
 		message = None
 		if user['id'] == self.sender:
 			message = '_@' + user['name'] + ' se escalou para o time_ *' + savedTeam['name'] + '*.'
@@ -72,7 +78,7 @@ class Userteams:
 			{
 				"type": "divider"
 			},
-			Message.get_user(user=user, leader=userLeader)
+			Message.get_user(dao=self.dao, user=user)
 		]
 
 		return Message(blocks=blocks, channel=savedTeam['slack_channel'])
@@ -83,7 +89,7 @@ class Userteams:
 		mObj = []
 
 		if user['id'] == self.sender:
-			message = '_Você se escalou para o time_ *' + savedTeam['name'] + '*.'
+			messageUser = '_Você se escalou para o time_ *' + savedTeam['name'] + '*.'
 		
 		else:
 			sender = self.dao.get_user(self.sender)
@@ -93,19 +99,6 @@ class Userteams:
 		channel = None
 		if 'slack_channel' in savedTeam:
 			channel = self.dao.get_channel(channel_id=savedTeam['slack_channel'])
-
-		tList = None
-		if 'tags' in savedTeam:
-			tList = []
-
-			if isinstance(savedTeam['tags'], str):
-				t = self.dao.get_saved_tag(type_tag='tag-team', tag_id=savedTeam['tags'])
-				tList.append(t.get('name'))
-
-			elif isinstance(savedTeam['tags'], list):
-				for tag in savedTeam['tags']:
-					t = self.dao.get_saved_tag(type_tag='tag-team', tag_id=tag)
-					tList.append(t.get('name'))
 
 		# Send message to to the user #
 		blocksUser = [
@@ -126,7 +119,7 @@ class Userteams:
 			{
 				"type": "divider"
 			},
-			Message.get_team(team=savedTeam, tags=tList, channel=channel)
+			Message.get_team(dao=self.dao, team=savedTeam)
 		]
 
 		mObj.append(Message(blocks=blocksUser, channel=user['id']))
@@ -151,7 +144,7 @@ class Userteams:
 				{
 					"type": "divider"
 				},
-				Message.get_team(team=savedTeam, tags=tList, channel=channel)
+				Message.get_team(dao=self.dao, team=savedTeam)
 			]
 
 			mObj.append(Message(blocks=blocksSender, channel=sender['id']))
