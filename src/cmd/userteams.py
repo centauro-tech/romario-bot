@@ -15,6 +15,7 @@ class Userteams:
 		self.text = message
 		self.user = None
 		self.teams = None
+		self.team = None
 		self.sender=None
 
 	def execute(self):
@@ -41,6 +42,18 @@ class Userteams:
 						teamsLst.append(savedTeam)
 
 				savedUser = self.dao.save_user(user=user['profile']['email'], teams=self.teams, slack=user['id'])
+		
+		elif self.team is not None:
+			savedTeam = self.dao.get_saved_team(team_name=self.team)
+			tList = []
+			if savedUser is not None and 'teams' in savedUser and savedTeam['id']:
+				tList = savedUser['teams']
+
+			if savedTeam['id'] not in tList:
+				tList.append(savedTeam['id'])
+				teamsLst.append(savedTeam)
+
+			savedUser = self.dao.save_user(user=user['profile']['email'], teams=tList, slack=user['id'])
 
 
 		mObj = []
