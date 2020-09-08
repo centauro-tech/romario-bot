@@ -49,7 +49,7 @@ class Dao:
 			return response['Item']
 
 
-	def save_user(self, user, leader=None, teams=None, slack=None, teams_id=None):
+	def save_user(self, user, leader=None, teams=None, slack=None, teams_id=None, tags=None):
 		savedUser = self.get_saved_user(user)
 
 		if savedUser is None:
@@ -63,6 +63,9 @@ class Dao:
 
 		if teams is not None:
 			savedUser['teams'] = teams
+
+		if tags is not None:
+			savedUser['tags'] = tags
 
 		if slack is not None:
 			savedUser['slack'] = slack
@@ -187,6 +190,7 @@ class Dao:
 		if tech_info is not None:
 			if 'tech_info' not in savedTeam:
 				savedTeam['tech_info'] = []
+			tech_info['id'] = self.get_hash_value(s=(tech_info['desc']+tech_info['value']))
 			savedTeam.get('tech_info').append(tech_info)
 
 		if tech_info_lst is not None:

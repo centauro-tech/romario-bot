@@ -26,6 +26,17 @@ class Team:
 
 		if savedTeam is None:
 			return 'Não existe o time ' + self.team + '  :-('
+		acessory = {
+			"type": "channels_select",
+			"placeholder": {
+				"type": "plain_text",
+				"text": "selecione...",
+				"emoji": True
+			},
+			"action_id": "team_select_channel_" + savedTeam['id'] + "#",
+		}
+		if 'slack_channel' in savedTeam:
+			acessory["initial_channel"] = savedTeam['slack_channel']
 
 		tags = self.dao.list_tags(type_tag='tag-team')
 
@@ -58,16 +69,7 @@ class Team:
 					"type": "mrkdwn",
 					"text": "Selecione o canal padrão do time *" + savedTeam['name'] + "*"
 				},
-				"accessory": {
-					"type": "channels_select",
-					"placeholder": {
-						"type": "plain_text",
-						"text": "selecione...",
-						"emoji": True
-					},
-					"action_id": "team_select_channel_" + savedTeam['id'] + "#",
-					"initial_channel": savedTeam['slack_channel']
-				}
+				"accessory": acessory
 			},
 			{
 				"type": "divider"
@@ -123,10 +125,6 @@ class Team:
 				]
 			}
 		]
-
-		#if 'slack_channel' in savedTeam:
-			#blocks[2]['accessory']['initial_channel']=savedTeam['slack_channel']
-
 
 		mObj = Message(blocks=blocks)
 		return mObj

@@ -20,8 +20,8 @@ class Teamemail:
 	def execute(self):
 		tech_info = {
 			'type': 'team-email',
-			'id': self.email_id,
-			'desc': self.email
+			'desc': self.email_id,
+			'value': self.email
 		}
 
 		savedTeam = self.dao.save_team(team_id=self.team, tech_info=tech_info)
@@ -29,19 +29,20 @@ class Teamemail:
 		mObj = None
 		if self.sender is not None:
 			mObj = []
-			mObj.append(Message(message='<@' + self.sender + '> Adicionou um novo email na ficha técnica do time ' + savedTeam['name'], channel=savedTeam['slack_channel']))
-			mObj.append(Message(message='Email adicionado com sucesso ao time ' + savedTeam['name'], channel=self.sender))
+			msg = '\n\n*:email:   ' + self.email_id + '*\n' + self.email
+			mObj.append(Message(blocks=self.get_block('<@' + self.sender + '> Adicionou um novo email na ficha técnica do time ' + savedTeam['name'] + msg, savedTeam), channel=savedTeam['slack_channel']))
+			mObj.append(Message(blocks=self.get_block('Email adicionado com sucesso ao time ' + savedTeam['name'] + msg, savedTeam), channel=self.sender))
 
 		return mObj
 
-	def get_block(self, message):
+	def get_block(self, message, savedTeam):
 
 		blocks = [
 			{
 				"type": "header",
 				"text": {
 					"type": "plain_text",
-					"text": ":email:   FICHA TÉCNICA!"
+					"text": ":chart_with_upwards_trend:   FICHA TÉCNICA!"
 				}
 			},
 			{
@@ -52,7 +53,7 @@ class Teamemail:
 				},
 				"accessory": {
 					"type": "image",
-					"image_url": 'https://github.com/centauro-tech/romario-bot/blob/master/html/img/soccer-field.png?raw=true',
+					"image_url": 'https://github.com/centauro-tech/romario-bot/blob/master/html/img/soccer-coach.png?raw=true',
 					"alt_text": "field"
 				}
 			},
@@ -63,10 +64,10 @@ class Teamemail:
 						"type": "button",
 						"text": {
 							"type": "plain_text",
-							"text": "Veja a escalação do time",
+							"text": ":chart_with_upwards_trend: Veja  a ficha técnica do time",
 							"emoji": True
 						},
-						"value": ":soccer-field: listteammembers_" + savedTeam['id'] + "#"
+						"value": "listteaminfo_" + savedTeam['id'] + "#"
 					}
 				]
 			}

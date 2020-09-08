@@ -21,8 +21,8 @@ class Teamlink:
 	def execute(self):
 		tech_info = {
 			'type': 'team-link',
-			'id': self.desc,
-			'desc': self.url
+			'desc': self.desc,
+			'value': self.url
 		}
 
 		savedTeam = self.dao.save_team(team_id=self.team, tech_info=tech_info)
@@ -30,7 +30,49 @@ class Teamlink:
 		mObj = None
 		if self.sender is not None:
 			mObj = []
-			mObj.append(Message(message='<@' + self.sender + '> Adicionou um novo link na ficha técnica do time ' + savedTeam['name'], channel=savedTeam['slack_channel']))
-			mObj.append(Message(message='Link adicionado com sucesso ao time ' + savedTeam['name'], channel=self.sender))
+			msg='\n\n:link:   <' + self.url + '|' + self.desc + '>'
+			mObj.append(Message(blocks=self.get_block('<@' + self.sender + '> Adicionou um novo link na ficha técnica do time ' + savedTeam['name'] + msg, savedTeam), channel=savedTeam['slack_channel']))
+			mObj.append(Message(blocks=self.get_block('Link adicionado com sucesso ao time ' + savedTeam['name'] + msg, savedTeam), channel=self.sender))
 
 		return mObj
+
+
+	def get_block(self, message, savedTeam):
+
+		blocks = [
+			{
+				"type": "header",
+				"text": {
+					"type": "plain_text",
+					"text": ":chart_with_upwards_trend:   FICHA TÉCNICA!"
+				}
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text":  message
+				},
+				"accessory": {
+					"type": "image",
+					"image_url": 'https://github.com/centauro-tech/romario-bot/blob/master/html/img/soccer-coach.png?raw=true',
+					"alt_text": "field"
+				}
+			},
+			{
+				"type": "actions",
+				"elements": [
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"text": ":chart_with_upwards_trend: Veja  a ficha técnica do time",
+							"emoji": True
+						},
+						"value": "listteaminfo_" + savedTeam['id'] + "#"
+					}
+				]
+			}
+		]
+
+		return blocks

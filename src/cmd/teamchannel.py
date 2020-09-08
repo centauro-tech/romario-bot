@@ -48,7 +48,7 @@ class Teamchannel:
 						"type": "button",
 						"text": {
 							"type": "plain_text",
-							"text": "Veja a escalação do time",
+							"text": ":soccer-field: Veja a escalação do time",
 							"emoji": True
 						},
 						"value": ":soccer-field: listteammembers_" + savedTeam['id'] + "#"

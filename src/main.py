@@ -28,9 +28,9 @@ def handler(event, context):
 		try:
 			event = json.loads(event['body'])
 		except ValueError: 
-			event = str(unquote(event['body'].replace('payload=','')))
+			event = unquote(unquote(event['body'].replace('payload=','')))
 			logger.info('decoded event: ' + str(event))
-			event = json.loads(event)	
+			event = json.loads(event)
 
 		logger.info('event: ' + json.dumps(event))
 
@@ -166,6 +166,8 @@ def get_return(success, message):
 				"Content-Type": "application/json",
 				"Access-Control-Allow-Origin": "*"
 			}
+			#TODO preciso disso para o challenge, mas os modais param de funcionar :-(
+			#,'body': json.dumps(message)
 		}
 
 	else:

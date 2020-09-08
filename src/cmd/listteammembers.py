@@ -37,13 +37,7 @@ class Listteammembers:
 		else:
 			b = []
 			for u in savedUsers:
-
-				leader=None
-				if 'leader' in u:
-					leader = u['leader']
-
-				user = self.dao.get_user(u['slack'])
-				m = Message.get_user(user=user, leader=leader)
+				m = Message.get_user(dao=self.dao, savedUser=u)
 
 				b.extend(
 						[
@@ -64,6 +58,34 @@ class Listteammembers:
 					}
 				]
 			blocks.extend(b)
+			blocks.extend([
+				{
+					"type": "divider"
+				},
+				{
+					"type": "actions",
+					"elements": [
+						{
+							"type": "button",
+							"text": {
+								"type": "plain_text",
+								"text": ":chart_with_upwards_trend: Veja  a ficha técnica do time",
+								"emoji": True
+							},
+							"value": "listteaminfo_" + savedTeam['id'] + "#"
+						},
+						{
+							"type": "button",
+							"text": {
+								"type": "plain_text",
+								"emoji": True,
+								"text": ":gear: Configurar time"
+							},
+							"value": "config_team_" + savedTeam['id'] + "#"
+						}
+					]
+				}
+			])
 
 		mObj = Message(blocks=blocks, channel=self.sender)
 		return mObj
