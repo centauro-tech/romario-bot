@@ -31,6 +31,13 @@ class Dao:
 				ret = response['user']
 				return ret
 
+	def list_sl_users(self):
+		response = client.users_list()
+
+		if response['ok'] is True:
+			ret = response['members']
+			return ret
+
 	def get_channel(self, channel_id=None):
 		if channel_id is not None:
 			response = client.conversations_info(
@@ -143,9 +150,12 @@ class Dao:
 			key = key & Key('slack_channel').eq(slack_channel)
 
 		if tags is not None:
-			print(tags)
-			key = key & Attr('tags').contains(tags)
-
+			if isinstance(tags, str):
+				key = key & Attr('tags').contains(tags)
+			elif isinstance(tags, list):
+				for t in tags:
+					key = key & Attr('tags').contains(t)
+			
 		ret = []
 
 		scan_kwargs = {

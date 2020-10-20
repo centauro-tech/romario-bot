@@ -10,7 +10,8 @@ import json
 import logging
 import os
 import sys
-from urllib.parse import unquote
+from urllib.parse import parse_qs
+
 
 from parser.slack import Slack
 from message import Message
@@ -28,11 +29,9 @@ def handler(event, context):
 		try:
 			event = json.loads(event['body'])
 		except ValueError: 
-			event = unquote(unquote(event['body'].replace('payload=','')))
-			logger.info('decoded event: ' + str(event))
-			event = json.loads(event)
+			event = json.loads(parse_qs(event['body'])['payload'][0])
 
-		logger.info('event: ' + json.dumps(event))
+		logger.info('decoded event: ' + json.dumps(event))
 
 
 	elif 'queryStringParameters' in event and \
@@ -59,8 +58,7 @@ def handler(event, context):
 	# Execute html requests
 	elif 'source' in event and \
 	   event.pop('source') == 'html' and \
-	   'action' in event and \
-	   'squad-repo' in event:
+	   'action' in event:
 
 		functionAttr = getattr(dao.Dao(), event.pop('action'))
 		jsonr = functionAttr(**event)

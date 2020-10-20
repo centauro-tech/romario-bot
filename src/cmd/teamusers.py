@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class Userteams:
+class Teamusers:
 
 	def __init__(self, dao, message):
 		self.dao = dao
