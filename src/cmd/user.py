@@ -52,7 +52,7 @@ class User:
 							"text": "Não",
 							"emoji": True
 						},
-						"value": "tech-no"
+						"value": "tech_no"
 					}
 				]
 			}
