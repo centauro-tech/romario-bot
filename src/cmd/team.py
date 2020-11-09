@@ -26,6 +26,8 @@ class Team:
 
 		if savedTeam is None:
 			return 'Não existe o time ' + self.team + '  :-('
+
+    
 		acessory = {
 			"type": "channels_select",
 			"placeholder": {
@@ -37,6 +39,8 @@ class Team:
 		}
 		if 'slack_channel' in savedTeam:
 			acessory["initial_channel"] = savedTeam['slack_channel']
+
+      
 
 		tags = self.dao.list_tags(type_tag='tag-team')
 

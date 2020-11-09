@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class Userteams:
+class Teamusers:
 
 	def __init__(self, dao, message):
 		self.dao = dao
@@ -55,11 +55,12 @@ class Userteams:
 
 			savedUser = self.dao.save_user(user=user['profile']['email'], teams=tList, slack=user['id'])
 
+
 		mObj = []
 		for savedTeam in teamsLst:
 			if 'slack_channel' in savedTeam and savedTeam['slack_channel'] is not None:
 				mObj.append(self.get_team_message(user=user, savedTeam=savedTeam))
-				mObj.extend(self.get_user_message(user=user, savedTeam=savedTeam))
+			mObj.extend(self.get_user_message(user=user, savedTeam=savedTeam))
 				
 		return mObj	
 
@@ -107,10 +108,6 @@ class Userteams:
 			sender = self.dao.get_user(self.sender)
 			messageUser = '_@' + sender['name'] + ' te escalou para o time_ *' + savedTeam['name'] + '*.'
 			messageSender = '_ Você escalou @' + user['name'] + ' para o time_ *' + savedTeam['name'] + '*.'
-
-		channel = None
-		if 'slack_channel' in savedTeam:
-			channel = self.dao.get_channel(channel_id=savedTeam['slack_channel'])
 
 		# Send message to to the user #
 		blocksUser = [

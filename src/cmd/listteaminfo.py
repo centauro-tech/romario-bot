@@ -74,6 +74,7 @@ class Listteaminfo:
 						blocks.extend(self.get_link(tech_info=tech_info, savedTeam=savedTeam))
 					elif tech_info['type'] == 'team-email':
 						blocks.extend(self.get_email(tech_info=tech_info, savedTeam=savedTeam))
+
             
 					blocks.append({"type": "divider"})
 
