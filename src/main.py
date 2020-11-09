@@ -29,7 +29,9 @@ def handler(event, context):
 		try:
 			event = json.loads(event['body'])
 		except ValueError: 
-			event = json.loads(parse_qs(event['body'])['payload'][0])
+			event = unquote(unquote(event['body'].replace('payload=','')))
+			logger.info('decoded event: ' + str(event))
+			event = json.loads(event)
 
 		logger.info('decoded event: ' + json.dumps(event))
 

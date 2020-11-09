@@ -39,7 +39,6 @@ class Team:
 		if 'slack_channel' in savedTeam:
 			acessory["initial_channel"] = savedTeam['slack_channel']
 
-
 		tags = self.dao.list_tags(type_tag='tag-team')
 
 		opt = []

@@ -55,11 +55,11 @@ class Userteams:
 
 			savedUser = self.dao.save_user(user=user['profile']['email'], teams=tList, slack=user['id'])
 
-
 		mObj = []
 		for savedTeam in teamsLst:
 			if 'slack_channel' in savedTeam and savedTeam['slack_channel'] is not None:
 				mObj.append(self.get_team_message(user=user, savedTeam=savedTeam))
+
 			mObj.extend(self.get_user_message(user=user, savedTeam=savedTeam))
 				
 		return mObj	
