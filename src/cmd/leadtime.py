@@ -17,3 +17,5 @@ class Leadtime:
 	def execute(self):
 		ret = self.dao.get_leadtime(repo='team-atendimento', labels=['user-story'])
 		print(ret)
+
+		print (self.dao.get_team_repo())

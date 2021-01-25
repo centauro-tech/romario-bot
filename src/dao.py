@@ -396,6 +396,15 @@ class Dao:
 
 		return ret
 
+	def get_team_repos(self):
+		g = Github(os.environ['gh_access_token'])
+		repos = g.search_repositories(query='org:' + os.environ['gh_organization'] + ' chapt OR team in:name')
+
+		ret=[]
+		for repo in repos:
+			ret.append(repo.name)
+
+		return {'repos': ret}
 
 	def get_hash_value(self, s):
 		return str(int(hashlib.sha256(s.strip().lower().encode('utf-8')).hexdigest(), 16) % 10**8)

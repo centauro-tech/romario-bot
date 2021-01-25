@@ -10,7 +10,7 @@ function getRepos() {
 		}
 	}
 
-	url = "https://cxiew7bdgh.execute-api.us-east-1.amazonaws.com/agile/prod-agile-professor-hubert?source=html&action=get_repos&squad-repo=";
+	url = "https://vpmg9pn8rf.execute-api.us-east-1.amazonaws.com/default/felipao-bot?source=html&action=get_team_repos&squad-repo=";
 	$.getJSON(url, setRepos);
 }
 
