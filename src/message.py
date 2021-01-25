@@ -115,3 +115,35 @@ class Message:
 			}
 
 		return ret
+
+
+	@staticmethod
+	def get_issue(dao, issue):
+
+		repository='\n*Repositório:* :soccer-field: ' + issue.repository.name
+		
+		if issue.labels is not None and len(issue.labels) > 0:
+			tags_txt = "\n*Labels:* "
+			for label in issue.labels:
+				 tags_txt += label.name + ', '
+		else:
+			tags_txt=''
+
+		ret = {
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text": "*" + issue.title + "*" + repository + tags_txt
+				},
+				"accessory": {
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"emoji": True,
+						"text": "Detalhes"
+					},
+					"value": "detail_issue_" + str(issue.number) + "#" + issue.repository.name + "#"
+				}
+			}
+
+		return ret

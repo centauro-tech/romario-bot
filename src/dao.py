@@ -5,6 +5,8 @@ import logging
 import json
 import hashlib
 
+from datetime import datetime, timedelta
+
 import boto3
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key,Attr
@@ -12,6 +14,7 @@ from boto3.dynamodb.conditions import Key,Attr
 from slack import WebClient
 from slack.errors import SlackApiError
 
+from github import Github
 
 
 logger = logging.getLogger()
@@ -276,6 +279,20 @@ class Dao:
 			return response['Item']
 		else:
 			return None
+
+
+	# Retorna dados das issues fechadas
+	def get_issues(self, repo, issue_number=None, state='open', from_date=None, to_date=None, labels=None):
+		g = Github(os.environ['gh_access_token'])
+		repo = g.get_repo(os.environ['gh_organization'] + "/" + repo)
+
+		if issue_number is not None:
+			ret = repo.get_issue(number=issue_number)
+		else:
+			ret = repo.get_issues(state=state, labels=labels)
+
+		return ret
+
 
 	def get_hash_value(self, s):
 		return str(int(hashlib.sha256(s.strip().lower().encode('utf-8')).hexdigest(), 16) % 10**8)
