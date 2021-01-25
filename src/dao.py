@@ -4,6 +4,7 @@ import configparser
 import logging
 import json
 import hashlib
+import statistics
 
 from datetime import datetime, timedelta
 
@@ -282,7 +283,7 @@ class Dao:
 
 
 	# Retorna dados das issues fechadas
-	def get_issues(self, repo, issue_number=None, state='open', from_date=None, to_date=None, labels=None):
+	def get_issues(self, repo, issue_number=None, state='open', labels=None):
 		g = Github(os.environ['gh_access_token'])
 		repo = g.get_repo(os.environ['gh_organization'] + "/" + repo)
 
@@ -290,6 +291,108 @@ class Dao:
 			ret = repo.get_issue(number=issue_number)
 		else:
 			ret = repo.get_issues(state=state, labels=labels)
+
+		return ret
+
+	# Retorna dados das issues fechadas
+	def get_leadtime(self, repo, from_date=None, to_date=None, labels=[], average=15):
+		if to_date is None:
+			to_date = datetime.now().replace(hour=23, minute=59, second=59)
+		else:
+			to_date = datetime.strptime(to_date, "%Y-%m-%d")
+		
+		if from_date is None:
+			if to_date is None:
+				from_date = datetime.now().replace(hour=00, minute=00, second=00) - timedelta(days=average)
+			else:
+				from_date = to_date - timedelta(days=(average-1))	
+		else:
+			from_date = datetime.strptime(from_date, "%Y-%m-%d")
+
+		# Cria objetos que vão ser retornados
+		throughput = {}
+		thrAvgHelper = {}
+		ltAvgHelper = {}
+		leadtime = {}
+		ret = {'self.repo.ghrepo': repo ,'tagsTitles': labels, 'throughput' : throughput, 'leadtime': leadtime}
+		from_dateAvg = from_date - timedelta(days=(average-1))
+
+		# Preenche com as chaves iniciais
+		d = from_dateAvg
+		while d <= to_date:
+			tagsRet = [0] * len(labels)
+			thrAvgHelper[d.strftime("%Y-%m-%d")] = [0, tagsRet]
+			ltAvgHelper[d.strftime("%Y-%m-%d")] = []
+			if d >= from_date:
+				tagsRet = [0] * len(labels)
+				throughput[d.strftime("%Y-%m-%d")] = [None,0,tagsRet]
+				leadtime[d.strftime("%Y-%m-%d")] = [None]
+			d += timedelta(days=1)
+
+		issues = self.get_issues(repo=repo, state='closed', labels=labels)
+
+		for issue in issues:
+				dateCreated = issue.created_at
+				dateClosed = issue.closed_at
+				dateClosedFormated = dateClosed.strftime("%Y-%m-%d")
+
+				delta = dateClosed - dateCreated
+				if dateClosed <= to_date and dateClosed >= from_dateAvg:
+					#LEADTIME-AVG
+					ltAvgHelper[dateClosedFormated].append(delta.days)
+
+					#THROUGHPUT-AVG
+					days = thrAvgHelper[dateClosedFormated][0]
+					days = days + 1
+					thrAvgHelper[dateClosedFormated][0] = days
+					for idTag, tag in enumerate(labels):
+						for label in issue.labels:
+							if (label.name==tag):
+								days = thrAvgHelper[dateClosedFormated][1][idTag]
+								days = days + 1
+								thrAvgHelper[dateClosedFormated][1][idTag] = days
+
+				if dateClosed <= to_date and dateClosed >= from_date:
+					#LEADTIME
+					leadtime[dateClosedFormated].append([issue.number, delta.days])
+
+					#THROUGHPUT
+					days = throughput[dateClosedFormated][1]
+					days = days + 1
+					throughput[dateClosedFormated][1] = days
+
+		# Calcula as médias
+		keysSorted = sorted(thrAvgHelper.keys())
+
+		# Média de throughput
+		avg = []
+		for x in range(0, len(keysSorted)):
+			avg.append(thrAvgHelper[keysSorted[x]][0])
+			if x >= (average-1):
+				throughput[keysSorted[x]][0] = [statistics.mean(avg), statistics.pstdev(avg)]
+				del avg[0]
+
+		for z in range(0, len(labels)):
+			avg = []
+			for x in range(0, len(keysSorted)):
+				avg.append(thrAvgHelper[keysSorted[x]][1][z])
+				if x >= (average-1):
+					throughput[keysSorted[x]][2][z] = statistics.mean(avg)
+					del avg[0]
+
+		keysSorted = sorted(ltAvgHelper.keys())
+
+		# Media de Leadtime
+		avg = []
+		for x in range(0, len(keysSorted)):
+			avg.append(ltAvgHelper[keysSorted[x]])
+			if x >= (average - 1):
+				avgHlp = []
+				for y in range(0, average):
+					avgHlp += avg[y]
+				
+				leadtime[keysSorted[x]][0] = [statistics.mean(avgHlp), statistics.pstdev(avgHlp)]
+				del avg[0]
 
 		return ret
 
