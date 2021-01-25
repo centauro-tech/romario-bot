@@ -1,16 +1,18 @@
+urlSrc = "https://vpmg9pn8rf.execute-api.us-east-1.amazonaws.com/default/felipao-bot?source=html&"
+
 function getRepos() {
 	function setRepos(data){
 		var combo = document.getElementById("squad");
-		data.repos.sort();
-		for (var i = 0; i < data.repos.length; i++) {
+		data.sort();
+		for (var i = 0; i < data.length; i++) {
 			var option = document.createElement("option");
-			option.value = data.repos[i];
-			option.text = data.repos[i];
+			option.value = data[i];
+			option.text = data[i];
 			combo.add(option);
 		}
 	}
 
-	url = "https://vpmg9pn8rf.execute-api.us-east-1.amazonaws.com/default/felipao-bot?source=html&action=get_team_repos&squad-repo=";
+	url = urlSrc + "action=get_gh_repos";
 	$.getJSON(url, setRepos);
 }
 
@@ -60,8 +62,7 @@ function getLabels() {
 	}
 
 	squad = $( "#squad option:selected" ).text();
-
-	url = "https://cxiew7bdgh.execute-api.us-east-1.amazonaws.com/agile/prod-agile-professor-hubert?source=html&action=get_labels&squad-repo=" + squad;
+	url = urlSrc + "action=get_gh_team_labels&repo=" + squad;
 	$.getJSON(url, setLabels);
 }
 
@@ -83,7 +84,6 @@ function printChart() {
 
 	var squad;
 	var avg;
-	var to_date;
 	var from_date;
 	var average = 7
 	if ($("#average").val() != "" && !isNaN($("#average").val())){
@@ -889,14 +889,10 @@ function printChart() {
 
 
 	squad = $( "#squad option:selected" ).text();
-	to_date = ""
 	from_date = ""
 	tags = ""
 	avg = ""
 
-	if ($("#toDate").val() != ""){
-		to_date = "&to_date=" + $("#toDate").val();
-	}
 	if ($("#fromDate").val() != ""){
 		from_date = "&from_date=" + $("#fromDate").val();	
 	}
@@ -909,39 +905,24 @@ function printChart() {
 	   val[i] = $(this).val();
 	});
 	if (val.length > 0){
-		tags = '&tags=' + val.toString()
+		tags = '&labels=' + val.toString()
 	}
 
 
-	url = "https://cxiew7bdgh.execute-api.us-east-1.amazonaws.com/agile/prod-agile-professor-hubert?source=html&action=closed_issues&squad-repo=" 
-		+ squad + to_date + from_date + tags + avg;
+	url = urlSrc + "action=get_leadtime&repo=" 
+		+ squad + from_date + tags + avg;
 
 	$.getJSON(url, addData);
 
-	url = "https://cxiew7bdgh.execute-api.us-east-1.amazonaws.com/agile/prod-agile-professor-hubert?source=html&action=get_cfd&squad-repo=" 
-	+ squad + to_date + from_date + tags + avg;
+	url = urlSrc + "action=get_gh_cfd&repo=" 
+	+ squad + from_date + tags + avg;
 
 	$.getJSON(url, addDataCFD);
 
-
-	url = "https://cxiew7bdgh.execute-api.us-east-1.amazonaws.com/agile/prod-agile-professor-hubert?source=html&action=get_retro&squad-repo=" 
-	+ squad;
-
-	$.getJSON(url, addDataRetro);
-
-	url = "https://cxiew7bdgh.execute-api.us-east-1.amazonaws.com/agile/prod-agile-professor-hubert?source=html&action=get_apr&squad-repo=" 
-	+ squad;
-
-	$.getJSON(url, addDataAPR);
-
 	/*
-	url = "/data/" + squad + ".json";
+		url = urlSrc + "action=get_gh_retro&repo=" 
+		+ squad;
 
-	$.getJSON( url ).done(function( json ) {
-		addDataTagsDistribution(json, val, $("#toDate").val(), $("#fromDate").val());
-	}).fail(function( jqxhr, textStatus, error ) {
-		var err = textStatus + ", " + error;
-		console.log( "Request Failed: " + err );
-	});
+		$.getJSON(url, addDataRetro);
 	*/
 }

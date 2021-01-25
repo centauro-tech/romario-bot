@@ -63,7 +63,7 @@ def handler(event, context):
 		functionAttr = getattr(dao.Dao(), event.pop('action'))
 		jsonr = functionAttr(**event)
 
-		ret = get_return(True, jsonr)
+		return get_return(True, jsonr)
 
 	# Execute BOT commands
 	else:
@@ -164,9 +164,10 @@ def get_return(success, message):
 				"Content-Type": "application/json",
 				"Access-Control-Allow-Origin": "*"
 			}
-			#TODO preciso disso para o challenge, mas os modais param de funcionar :-(
-			#,'body': json.dumps(message)
 		}
+
+		if message is not None:
+			ret['body'] = json.dumps(message)
 
 	else:
 		ret = {
@@ -175,9 +176,11 @@ def get_return(success, message):
 			"headers": {
 				"Content-Type": "application/json",
 				"Access-Control-Allow-Origin": "*"
-			}, 
-			'body': json.dumps(message)
+			}
 		}
+
+		if message is not None:
+			ret['body'] = json.dumps(message)
 
 	logger.info('return: ' + json.dumps(ret))
 

@@ -283,29 +283,28 @@ class Dao:
 
 
 	# Retorna dados das issues fechadas
-	def get_issues(self, repo, issue_number=None, state='open', labels=None):
+	def get_issues(self, repo, issue_number=None, state='open', labels=[], from_date=None, sort='created', direction='asc'):
 		g = Github(os.environ['gh_access_token'])
 		repo = g.get_repo(os.environ['gh_organization'] + "/" + repo)
 
 		if issue_number is not None:
 			ret = repo.get_issue(number=issue_number)
 		else:
-			ret = repo.get_issues(state=state, labels=labels)
+			ret = repo.get_issues(state=state, labels=labels, since=from_date, sort=sort, direction=direction)
 
 		return ret
 
 	# Retorna dados das issues fechadas
-	def get_leadtime(self, repo, from_date=None, to_date=None, labels=[], average=15):
-		if to_date is None:
-			to_date = datetime.now().replace(hour=23, minute=59, second=59)
-		else:
-			to_date = datetime.strptime(to_date, "%Y-%m-%d")
+	def get_leadtime(self, repo, from_date=None, labels=None, average=15):
+		average = int(average)
+
+		if labels is not None:
+			labels = labels.split(',')
+
+		to_date = datetime.now().replace(hour=23, minute=59, second=59)
 		
 		if from_date is None:
-			if to_date is None:
-				from_date = datetime.now().replace(hour=00, minute=00, second=00) - timedelta(days=average)
-			else:
-				from_date = to_date - timedelta(days=(average-1))	
+			from_date = to_date - timedelta(days=(average-1))
 		else:
 			from_date = datetime.strptime(from_date, "%Y-%m-%d")
 
@@ -329,9 +328,15 @@ class Dao:
 				leadtime[d.strftime("%Y-%m-%d")] = [None]
 			d += timedelta(days=1)
 
-		issues = self.get_issues(repo=repo, state='closed', labels=labels)
+		issues = self.get_issues(repo=repo, state='closed', from_date=from_dateAvg)
 
 		for issue in issues:
+			eligible = False
+			for lbl in issue.labels:
+				if lbl.name in labels:
+					eligible = True
+
+			if eligible:
 				dateCreated = issue.created_at
 				dateClosed = issue.closed_at
 				dateClosedFormated = dateClosed.strftime("%Y-%m-%d")
@@ -352,14 +357,14 @@ class Dao:
 								days = days + 1
 								thrAvgHelper[dateClosedFormated][1][idTag] = days
 
-				if dateClosed <= to_date and dateClosed >= from_date:
-					#LEADTIME
-					leadtime[dateClosedFormated].append([issue.number, delta.days])
+			if dateClosed <= to_date and dateClosed >= from_date:
+				#LEADTIME
+				leadtime[dateClosedFormated].append([issue.number, delta.days])
 
-					#THROUGHPUT
-					days = throughput[dateClosedFormated][1]
-					days = days + 1
-					throughput[dateClosedFormated][1] = days
+				#THROUGHPUT
+				days = throughput[dateClosedFormated][1]
+				days = days + 1
+				throughput[dateClosedFormated][1] = days
 
 		# Calcula as médias
 		keysSorted = sorted(thrAvgHelper.keys())
@@ -391,12 +396,16 @@ class Dao:
 				for y in range(0, average):
 					avgHlp += avg[y]
 				
-				leadtime[keysSorted[x]][0] = [statistics.mean(avgHlp), statistics.pstdev(avgHlp)]
+				if len(avgHlp) > 0:
+					leadtime[keysSorted[x]][0] = [statistics.mean(avgHlp), statistics.pstdev(avgHlp)]
+				else:
+					leadtime[keysSorted[x]][0] = [None, None]
+				
 				del avg[0]
 
 		return ret
 
-	def get_team_repos(self):
+	def get_gh_repos(self):
 		g = Github(os.environ['gh_access_token'])
 		repos = g.search_repositories(query='org:' + os.environ['gh_organization'] + ' chapt OR team in:name')
 
@@ -404,7 +413,68 @@ class Dao:
 		for repo in repos:
 			ret.append(repo.name)
 
-		return {'repos': ret}
+		return ret
+
+	# Retorna as labels das issues do Repositorio selecionado
+	def get_gh_team_labels(self, repo=None):
+		g = Github(os.environ['gh_access_token'])
+		repo = g.get_repo(os.environ['gh_organization'] + "/" + repo)
+		labels = repo.get_labels()
+
+		ret = []
+		for label in labels:
+			ret.append(label.name)
+
+		return ret
+
+	# Retorna dados das issues abertas
+	def get_gh_cfd(self, repo, from_date=None, labels=[], average=None):
+		average=int(average)
+		to_date = datetime.now().replace(hour=23, minute=59, second=59)
+		labels = labels.split(',')
+
+		if from_date is None:
+			from_date = datetime.now().replace(hour=00, minute=00, second=00) - timedelta(days=average)
+		else:
+			from_date = datetime.strptime(from_date, "%Y-%m-%d")
+
+		issuesRet = []
+
+		issues = self.get_issues(repo=repo, state='closed', from_date=from_date)
+		issuesRet.append(self.run_gh_cfd(labels, issues))
+		
+		issues = self.get_issues(repo=repo, state='open', from_date=from_date)
+		issuesRet.append(self.run_gh_cfd(labels, issues))
+
+		return {'dateFrom': from_date.strftime('%Y-%m-%d'), \
+		  'dateTo': to_date.strftime('%Y-%m-%d'), \
+		  'cfd': issuesRet}
+
+	def run_gh_cfd(self, labels, issues):
+		ret = []
+
+		for issue in issues:			
+			eligible = False
+			for lbl in issue.labels:
+				if lbl.name in labels:
+					eligible = True
+
+			if eligible:
+				issueArr = {'issue': issue.number, \
+							'created_at': issue.created_at.strftime('%Y-%m-%d')}
+
+				if issue.closed_at is not None:
+					issueArr['closed_at']=(issue.closed_at.strftime('%Y-%m-%d'))
+
+				if issue.assignee is not None:
+					for event in issue.get_events():
+						if event.event == 'assigned':
+							issueArr['assigned_at'] = event.created_at.strftime('%Y-%m-%d')
+							break
+
+				ret.append(issueArr)
+
+		return ret
 
 	def get_hash_value(self, s):
 		return str(int(hashlib.sha256(s.strip().lower().encode('utf-8')).hexdigest(), 16) % 10**8)
