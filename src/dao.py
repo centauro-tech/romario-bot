@@ -357,14 +357,14 @@ class Dao:
 								days = days + 1
 								thrAvgHelper[dateClosedFormated][1][idTag] = days
 
-			if dateClosed <= to_date and dateClosed >= from_date:
-				#LEADTIME
-				leadtime[dateClosedFormated].append([issue.number, delta.days])
+				if issue.closed_at <= to_date and issue.closed_at >= from_date:
+					#LEADTIME
+					leadtime[dateClosedFormated].append([issue.number, delta.days])
 
-				#THROUGHPUT
-				days = throughput[dateClosedFormated][1]
-				days = days + 1
-				throughput[dateClosedFormated][1] = days
+					#THROUGHPUT
+					days = throughput[dateClosedFormated][1]
+					days = days + 1
+					throughput[dateClosedFormated][1] = days
 
 		# Calcula as médias
 		keysSorted = sorted(thrAvgHelper.keys())
@@ -441,10 +441,10 @@ class Dao:
 		issuesRet = []
 
 		issues = self.get_issues(repo=repo, state='closed', from_date=from_date)
-		issuesRet.append(self.run_gh_cfd(labels, issues))
+		issuesRet.extend(self.run_gh_cfd(labels, issues))
 		
 		issues = self.get_issues(repo=repo, state='open', from_date=from_date)
-		issuesRet.append(self.run_gh_cfd(labels, issues))
+		issuesRet.extend(self.run_gh_cfd(labels, issues))
 
 		return {'dateFrom': from_date.strftime('%Y-%m-%d'), \
 		  'dateTo': to_date.strftime('%Y-%m-%d'), \
