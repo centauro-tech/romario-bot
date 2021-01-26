@@ -1,4 +1,4 @@
-urlSrc = "https://vpmg9pn8rf.execute-api.us-east-1.amazonaws.com/default/felipao-bot?source=html&"
+urlSrc = "https://hof9lsfvs9.execute-api.us-east-1.amazonaws.com/default/romario-bot?source=html&"
 
 function getRepos() {
 	function setRepos(data){
