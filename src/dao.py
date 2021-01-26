@@ -288,10 +288,12 @@ class Dao:
 		repo = g.get_repo(os.environ['gh_organization'] + "/" + repo)
 
 		if from_date is None:
-			from_date = to_date - timedelta(days=30)
+			from_date = datetime.now().replace(hour=23, minute=59, second=59) - timedelta(days=90)
 
 		if issue_number is not None:
 			ret = repo.get_issue(number=issue_number)
+		elif state == 'open':
+			ret = repo.get_issues(state=state, labels=labels, since=from_date, sort=sort, direction=direction)
 		else:
 			ret = repo.get_issues(state=state, labels=labels, since=from_date, sort=sort, direction=direction)
 
