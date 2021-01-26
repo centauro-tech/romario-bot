@@ -287,6 +287,9 @@ class Dao:
 		g = Github(os.environ['gh_access_token'])
 		repo = g.get_repo(os.environ['gh_organization'] + "/" + repo)
 
+		if from_date is None:
+			from_date = to_date - timedelta(days=30)
+
 		if issue_number is not None:
 			ret = repo.get_issue(number=issue_number)
 		else:
