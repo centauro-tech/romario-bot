@@ -46,6 +46,6 @@ class Newuser:
         setattr(userObj, 'sender', self.sender)
         blocks.extend(userObj.execute().blocks)
 
-        mObj = Message(blocks=blocks, channel=self.sender)
+        mObj = Message(None, channel=self.sender, blocks=blocks)
 
         return mObj 
